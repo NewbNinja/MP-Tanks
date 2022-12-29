@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefe94040101d3241a5b3d63a6bfbea3, type: 3}
+  m_Name: ExamplesConfig
+  m_EditorClassIdentifier: 
+  AvatarDisplay: 1
+  UseCacheForAvatars: 1
+  DefaultAvatar: {fileID: 21300000, guid: ba7b3ed94bec5c64ab4ee22be5e0f9fa, type: 3}
+  DefaultClanAvatar: {fileID: 21300000, guid: c19ffa3232b68d147b0b718af7336f14, type: 3}

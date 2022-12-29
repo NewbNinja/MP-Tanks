@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0a30666e47328d459a179ab5f55a7d3, type: 3}
+  m_Name: TournamentPrefabs
+  m_EditorClassIdentifier: 
+  TournamentWindow: {fileID: 1457029357348120349, guid: 07999f2eda6e44f4a9476f673af480d8, type: 3}
+  TournamentUser: {fileID: 893842588231436482, guid: 1ecbd374c0e9cc34a8421b6dbcae34d2, type: 3}
+  TournamentFinish: {fileID: 8052658936818738399, guid: fffeb442bbc0e9e47b67d6574b0b9de5, type: 3}

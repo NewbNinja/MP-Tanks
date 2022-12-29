@@ -1,0 +1,1905 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb640e96c617068419707c87fc4ddd44, type: 3}
+  m_Name: IAPSettings
+  m_EditorClassIdentifier: 
+  categoryList:
+  - referenceID: 3097ec21-dab5-4a80-82d4-1cfe4b4c54e7
+    ID: Category 00
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 57f68752-04ea-481c-8844-c9ca3141d336
+    ID: Category 04
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 2cc7f5ff-954f-45d6-adab-485eea63e7ae
+    ID: Category 05
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 5828302c-b240-4850-a91a-10b212f1255c
+    ID: Category 06
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 41ce255e-edc1-496e-871e-01cda8f0a8ec
+    ID: Category 07
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 39841d36-a030-4270-988c-b1d99708b47f
+    ID: Category 08
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: 5bb483c1-953a-4b56-a703-aa9e86ca185b
+    ID: Category 09
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  - referenceID: ebb00b17-b647-4c77-b50f-ee9e7c4ba0ca
+    ID: Category 10
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+  currencyList:
+  - referenceID: 220be08c-be6d-4e63-a0c7-48b629257b77
+    ID: coins
+    baseAmount: 0
+    maxAmount: 0
+    icon: {fileID: 21300000, guid: 815c2d1cc82c7f3468708b31017e1ab2, type: 3}
+  productList:
+  - referenceID: c5ea337a-d2d6-456f-89f5-e8c664caeda8
+    ID: bundle
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 0
+    type: 1
+    title: bundle
+    description: example for a product bundle.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: bdadc4b6a2b0ff84ba4a581d8bfa8ba5, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $4.99
+    rewardList:
+    - type: 1
+      currency:
+        rid: 2
+      product:
+        rid: -2
+      amount: 1000
+      realPrice: 
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 3
+      amount: 1
+      realPrice: 
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 4
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: c2c7e2c7-0304-45e4-9832-06eb199de3f3
+    ID: coins_small
+    storeIDs:
+    - active: 1
+      store: GooglePlay
+      ID: coins
+    - active: 1
+      store: AppleAppStore
+      ID: coins
+    - active: 1
+      store: SteamStore
+      ID: 100
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 5
+    type: 0
+    title: coins
+    description: 1000 coins for virtual purchases.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: 815c2d1cc82c7f3468708b31017e1ab2, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $1.99
+    rewardList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 1000
+      realPrice: 
+    requirement:
+      pairs:
+      - Key: 
+        Value: 0
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: a43d7626-2803-4f77-8abb-d779fa21a306
+    ID: coin_pack
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 5
+    type: 0
+    title: coin pack
+    description: 2500 coins for virtual purchases.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: 815c2d1cc82c7f3468708b31017e1ab2, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $3.99
+    rewardList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 2500
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 5f3e468b-59a1-4601-972a-31892e27ab15
+    ID: big_coin_pack
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 5
+    type: 0
+    title: big coin pack
+    description: 6000 coins for virtual purchases.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: 815c2d1cc82c7f3468708b31017e1ab2, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $7.99
+    rewardList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 6000
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 17ea6cfd-a02a-493f-b3d3-53a3496c8f7a
+    ID: no_ads
+    storeIDs:
+    - active: 1
+      store: GooglePlay
+      ID: no_ads_v2
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 5
+    type: 1
+    title: no ads
+    description: example for a permanent product.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: 65bc96f99ca43b646a50e06c9d8152e4, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $2.49
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 7
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: a832c1c4-cadc-426b-8e4e-cda32d42434b
+    ID: abo_monthly
+    storeIDs:
+    - active: 1
+      store: AppleAppStore
+      ID: sub_renew
+    - active: 1
+      store: PayPal
+      ID: P-6TN64933079336525MIBZDVI
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 5
+    type: 2
+    title: subscription 1
+    description: example for a subscription product.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: e165572b11ad6214a9cf46afd0eaa1fd, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $0.99
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 8
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 0f42277a-14da-4897-a0be-07fd028e8f3a
+    ID: health
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 9
+    type: 0
+    title: health
+    description: example for a consumable product.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 726b92dd1bc8f1346b89333fa23d0605, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 250
+      realPrice: 
+    rewardList: []
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 514e0c09-4efb-4703-b41e-ea8e8172ee55
+    ID: bonus
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 9
+    type: 1
+    title: bonus
+    description: example for a permanent product.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 28e09ca5e6e750045a780873903898f7, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 1000
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 10
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 4272168d-8830-4a4e-99db-b65c35a9330b
+    ID: weapon_1
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 11
+    type: 1
+    title: weapon 1
+    description: example for a single selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: a0646f79c4f7e0e47bdf719030b4664a, type: 3}
+    priceList: []
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 12
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 7bac1269-d945-4d08-89a2-cc8a7d9429a4
+    ID: weapon_2
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 11
+    type: 1
+    title: weapon 2
+    description: example for a single selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: a0646f79c4f7e0e47bdf719030b4664a, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 500
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 13
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: d78ab29b-fcf7-4911-9d9d-c30bbfac820a
+    ID: weapon_3
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 11
+    type: 1
+    title: weapon 3
+    description: example for a single selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: a0646f79c4f7e0e47bdf719030b4664a, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 1000
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 14
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: a384b267-e3a7-4092-a30c-6946311d69ec
+    ID: gear_1
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 15
+    type: 1
+    title: gear 1
+    description: example for a multi selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 535410fa3e3494b49847d552046acb47, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 200
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 16
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: a00f4298-df0d-4f2d-ac71-cf3b8ef84307
+    ID: gear_2
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 15
+    type: 1
+    title: gear 2
+    description: example for a multi selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 535410fa3e3494b49847d552046acb47, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 400
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 17
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 50090fab-c31b-49f4-903e-320d14a4ed9c
+    ID: gear_3
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 15
+    type: 1
+    title: gear 3
+    description: example for a multi selectable group.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 535410fa3e3494b49847d552046acb47, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 600
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 18
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 557d6c4a-7405-4b00-8fb1-0de6ab703736
+    ID: secret_1
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 19
+    type: 1
+    title: secret 1
+    description: example for an unlockable product.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 91e4d4ee7f408e447b89b8bd29ba45e2, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 500
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 20
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs:
+      - Key: level
+        Value: 1
+      label: unlock on level 1
+    nextUpgrade:
+      rid: -2
+  - referenceID: 21e269ca-3e07-4c59-afb0-530e95b2d67b
+    ID: secret_2
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 19
+    type: 1
+    title: secret 2
+    description: example for an unlockable product.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 91e4d4ee7f408e447b89b8bd29ba45e2, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 750
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 21
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs:
+      - Key: level
+        Value: 2
+      label: unlock on level 2
+    nextUpgrade:
+      rid: -2
+  - referenceID: 85198d8d-29f8-49e2-b8f3-d0ada5134496
+    ID: speed
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 22
+    type: 1
+    title: speed
+    description: example for an upgradeable product. base level.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 6f3ee196296da2345aafec723f21c754, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 23
+      product:
+        rid: -2
+      amount: 500
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 24
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: 25
+  - referenceID: ff9f58e9-a516-4590-83cc-374842da9839
+    ID: speed_1
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 26
+    type: 1
+    title: speed 1
+    description: example for an upgradeable product. level 1.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 61f73df092bfad94f8aed638786c1265, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 50
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 27
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: 28
+  - referenceID: c2746012-8c56-470f-96b8-e095c1d05b1e
+    ID: speed_2
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 26
+    type: 1
+    title: speed 2
+    description: example for an upgradeable product. level 2.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 2bf9ac96244336041ab6d976b0249ba0, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 100
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 28
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: 29
+  - referenceID: c9c0d678-27fd-477f-8446-7bbf8d507c20
+    ID: speed_3
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 26
+    type: 1
+    title: speed 3
+    description: example for an upgradeable product. level 3.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: dc09299bb071725478451b761006780a, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 6
+      product:
+        rid: -2
+      amount: 200
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 29
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 61c76a0b-4af7-427e-9aad-a1c3942e5ecb
+    ID: abo_weekly
+    storeIDs:
+    - active: 1
+      store: AppleAppStore
+      ID: sub_renew2
+    - active: 1
+      store: PayPal
+      ID: P-6TN64933079336525MIBZDVI
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 30
+    type: 2
+    title: subscription 2
+    description: example for a subscription product.
+    discount: 0
+    fetch: 1
+    icon: {fileID: 21300000, guid: e165572b11ad6214a9cf46afd0eaa1fd, type: 3}
+    priceList:
+    - type: 0
+      currency:
+        rid: -2
+      product:
+        rid: -2
+      amount: 0
+      realPrice: $0.99
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 31
+      amount: 1
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  - referenceID: 6e56ec20-ff9b-456d-abb1-c6647e6dadce
+    ID: energy
+    storeIDs: []
+    customBilling:
+      active: 0
+      provider: 0
+    category:
+      rid: 32
+    type: 0
+    title: energy
+    description: example for a consumable product. consumed later.
+    discount: 0
+    fetch: 0
+    icon: {fileID: 21300000, guid: 8500b2f52330eb24286da41b35002e9e, type: 3}
+    priceList:
+    - type: 1
+      currency:
+        rid: 23
+      product:
+        rid: -2
+      amount: 250
+      realPrice: 
+    rewardList:
+    - type: 2
+      currency:
+        rid: -2
+      product:
+        rid: 33
+      amount: 5
+      realPrice: 
+    requirement:
+      pairs: []
+      label: 
+    nextUpgrade:
+      rid: -2
+  customStoreConfig:
+    PayPal:
+      enabled: 0
+      currencyCode: USD
+      sandbox:
+        clientID: 
+        secretKey: 
+      live:
+        clientID: 
+        secretKey: 
+      returnUrl: 
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 0
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: ebb00b17-b647-4c77-b50f-ee9e7c4ba0ca
+        ID: Bundles
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 2
+      type: {class: IAPCurrency, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 220be08c-be6d-4e63-a0c7-48b629257b77
+        ID: coins
+        baseAmount: 0
+        maxAmount: 0
+        icon: {fileID: 0}
+    - rid: 3
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: c5ea337a-d2d6-456f-89f5-e8c664caeda8
+        ID: bundle
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 0
+        type: 1
+        title: bundle
+        description: example for a product bundle.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: bdadc4b6a2b0ff84ba4a581d8bfa8ba5, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $4.99
+        rewardList:
+        - type: 1
+          currency:
+            rid: 2
+          product:
+            rid: -2
+          amount: 1000
+          realPrice: 
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 3
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 4
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 17ea6cfd-a02a-493f-b3d3-53a3496c8f7a
+        ID: no_ads
+        storeIDs:
+        - active: 1
+          store: GooglePlay
+          ID: no_ads_v2
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 5
+        type: 1
+        title: no ads
+        description: example for a permanent product.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: 65bc96f99ca43b646a50e06c9d8152e4, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $2.49
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 7
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 5
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 3097ec21-dab5-4a80-82d4-1cfe4b4c54e7
+        ID: IAP
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 6
+      type: {class: IAPCurrency, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 220be08c-be6d-4e63-a0c7-48b629257b77
+        ID: coins
+        baseAmount: 0
+        maxAmount: 0
+        icon: {fileID: 0}
+    - rid: 7
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 17ea6cfd-a02a-493f-b3d3-53a3496c8f7a
+        ID: no_ads
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 5
+        type: 1
+        title: no_ads
+        description: disables ads from showing up.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: 07b80a176cc8fb24e840c795e48286ac, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $1.99
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 7
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 8
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: a832c1c4-cadc-426b-8e4e-cda32d42434b
+        ID: abo_monthly
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 5
+        type: 2
+        title: abo_monthly
+        description: monthly abo for awesome features.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: b4acb9e5975427d4581256e5c20544ed, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $0.99
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 8
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 9
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 57f68752-04ea-481c-8844-c9ca3141d336
+        ID: Items
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 10
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 514e0c09-4efb-4703-b41e-ea8e8172ee55
+        ID: bonus
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 9
+        type: 1
+        title: bonus
+        description: unlocks a bonus level. non-consum.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: b0bc4d658e4fd2c43b04161e29a3735b, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 2000
+          realPrice: 
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 34
+          amount: 1
+          realPrice: 
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 35
+          amount: 5
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 10
+          amount: 1
+          realPrice: 
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 36
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 11
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 41ce255e-edc1-496e-871e-01cda8f0a8ec
+        ID: Armory
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 12
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 4272168d-8830-4a4e-99db-b65c35a9330b
+        ID: weapon_1
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 11
+        type: 1
+        title: weapon 1
+        description: example for a single selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: c359c83e78b9af74190863b19f54af41, type: 3}
+        priceList: []
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 12
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 13
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 7bac1269-d945-4d08-89a2-cc8a7d9429a4
+        ID: weapon_2
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 11
+        type: 1
+        title: weapon 2
+        description: example for a single selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 5b99290955e7a1649b33bf54d889f10c, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 500
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 13
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 14
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: d78ab29b-fcf7-4911-9d9d-c30bbfac820a
+        ID: weapon_3
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 11
+        type: 1
+        title: weapon 3
+        description: example for a single selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: ef1be56422fc17442bdecdb1f9a65e20, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 1000
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 14
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 15
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 39841d36-a030-4270-988c-b1d99708b47f
+        ID: Custom
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 16
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: a384b267-e3a7-4092-a30c-6946311d69ec
+        ID: gear_1
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 15
+        type: 1
+        title: gear 1
+        description: example for a multi selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 56bebea273381ad4d8bbd417791dc4de, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 200
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 16
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 17
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: a00f4298-df0d-4f2d-ac71-cf3b8ef84307
+        ID: gear_2
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 15
+        type: 1
+        title: gear 2
+        description: example for a multi selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: c15599ff72e1be643906cc653bfa5878, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 400
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 17
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 18
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 50090fab-c31b-49f4-903e-320d14a4ed9c
+        ID: gear_3
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 15
+        type: 1
+        title: gear 3
+        description: example for a multi selectable group.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 6481ae68eade16e4cad66a4f45762d27, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 600
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 18
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 19
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 5bb483c1-953a-4b56-a703-aa9e86ca185b
+        ID: Locked
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 20
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 557d6c4a-7405-4b00-8fb1-0de6ab703736
+        ID: secret_1
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 19
+        type: 1
+        title: secret 1
+        description: example for an unlockable product.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 6d96c1c47da974663975780c567826a0, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 500
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 20
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs:
+          - Key: level
+            Value: 1
+          label: unlock on level 1
+        nextUpgrade:
+          rid: -2
+    - rid: 21
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 21e269ca-3e07-4c59-afb0-530e95b2d67b
+        ID: secret_2
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 19
+        type: 1
+        title: secret 2
+        description: example for an unlockable product.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: f3067de0cda0e4fe1a387dc3fa4d0b7d, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 750
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 21
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs:
+          - Key: level
+            Value: 2
+          label: unlock on level 2
+        nextUpgrade:
+          rid: -2
+    - rid: 22
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 5828302c-b240-4850-a91a-10b212f1255c
+        ID: Category 06
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 23
+      type: {class: IAPCurrency, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 220be08c-be6d-4e63-a0c7-48b629257b77
+        ID: coins
+        baseAmount: 0
+        maxAmount: 0
+        icon: {fileID: 21300000, guid: d84fc91eaef14d14a8f21f8984c43d38, type: 3}
+    - rid: 24
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 85198d8d-29f8-49e2-b8f3-d0ada5134496
+        ID: speed
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 22
+        type: 1
+        title: speed
+        description: gain a speed boost at start.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 6f3ee196296da2345aafec723f21c754, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 23
+          product:
+            rid: -2
+          amount: 500
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 24
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: 25
+    - rid: 25
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: ff9f58e9-a516-4590-83cc-374842da9839
+        ID: speed_1
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 26
+        type: 1
+        title: speed 1
+        description: 'gain a speed boost at start. next upgrade: +10%'
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 61f73df092bfad94f8aed638786c1265, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 50
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 27
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: 28
+    - rid: 26
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 5828302c-b240-4850-a91a-10b212f1255c
+        ID: Upgrades
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 27
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: ff9f58e9-a516-4590-83cc-374842da9839
+        ID: speed_1
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 26
+        type: 1
+        title: speed 1
+        description: 'gain a speed boost at start. next upgrade: +10%'
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 61f73df092bfad94f8aed638786c1265, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 50
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 27
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: 28
+    - rid: 28
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: c2746012-8c56-470f-96b8-e095c1d05b1e
+        ID: speed_2
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 26
+        type: 1
+        title: speed 2
+        description: 'gain a speed boost at start. next upgrade: +20%'
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: 2bf9ac96244336041ab6d976b0249ba0, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 100
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 28
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: 29
+    - rid: 29
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: c9c0d678-27fd-477f-8446-7bbf8d507c20
+        ID: speed_3
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 26
+        type: 1
+        title: speed 3
+        description: 'gain a speed boost at start. next upgrade: +30%'
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: dc09299bb071725478451b761006780a, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 150
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 29
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 30
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 3097ec21-dab5-4a80-82d4-1cfe4b4c54e7
+        ID: IAP
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 31
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 61c76a0b-4af7-427e-9aad-a1c3942e5ecb
+        ID: abo_weekly
+        storeIDs:
+        - active: 1
+          store: AppleAppStore
+          ID: sub_renew2
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 30
+        type: 2
+        title: subscription
+        description: subscription for awesome features.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: b4acb9e5975427d4581256e5c20544ed, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $0.99
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 31
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 32
+      type: {class: IAPCategory, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 2cc7f5ff-954f-45d6-adab-485eea63e7ae
+        ID: Category 05
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+    - rid: 33
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 6e56ec20-ff9b-456d-abb1-c6647e6dadce
+        ID: energy
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 32
+        type: 0
+        title: energy
+        description: a charge of energy. consumable.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: dadaaa9430246e24b8ab868f33e59df4, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 23
+          product:
+            rid: -2
+          amount: 400
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 33
+          amount: 5
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 34
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 0f42277a-14da-4897-a0be-07fd028e8f3a
+        ID: health
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 9
+        type: 0
+        title: health
+        description: a pack of medikits. consumable.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: b88e60833990a5e4f9c34811f5ce3ad3, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 250
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 34
+          amount: 3
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 35
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 00baa379-8f28-4b91-86df-71df750136a6
+        ID: bullets
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 9
+        type: 0
+        title: bullets
+        description: a pack of ammunition. consumable.
+        discount: 0
+        fetch: 0
+        icon: {fileID: 21300000, guid: f79e7b766efd7e647a48a4d2501f68e9, type: 3}
+        priceList:
+        - type: 1
+          currency:
+            rid: 6
+          product:
+            rid: -2
+          amount: 250
+          realPrice: 
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 35
+          amount: 10
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2
+    - rid: 36
+      type: {class: IAPProduct, ns: SIS, asm: Assembly-CSharp}
+      data:
+        referenceID: 17ea6cfd-a02a-493f-b3d3-53a3496c8f7a
+        ID: no_ads
+        storeIDs: []
+        customBilling:
+          active: 0
+          provider: 0
+        category:
+          rid: 5
+        type: 1
+        title: no_ads
+        description: disables ads from showing up.
+        discount: 0
+        fetch: 1
+        icon: {fileID: 21300000, guid: 07b80a176cc8fb24e840c795e48286ac, type: 3}
+        priceList:
+        - type: 0
+          currency:
+            rid: -2
+          product:
+            rid: -2
+          amount: 0
+          realPrice: $1.99
+        rewardList:
+        - type: 2
+          currency:
+            rid: -2
+          product:
+            rid: 36
+          amount: 1
+          realPrice: 
+        requirement:
+          pairs: []
+          label: 
+        nextUpgrade:
+          rid: -2

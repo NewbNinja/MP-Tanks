@@ -1,0 +1,3535 @@
+const ItemDefaultCatalog = "CBSItems";
+const AzureSecretDataKey = "CBSAzureKey";
+const AzureStorageDataKey = "CBSAzureStorage";
+const MaxClanMembersKey = "CBSMaxClanMembers";
+const DefaultClanMembers = "100";
+const StaticsticExpKey = "PlayerExp";
+const LevelTitleKey = "CBSLevelTable";
+
+const FriendsAcceptTag = "Accept";
+const FriendsRequestTag = "Request";
+
+const ChatListTablePrefix = "chatlist";
+const ClanTableID = "cbsclans";
+const TournamentTablePrefix = "cbstournament4";
+const ClanGroupTag = "CBSClan";
+
+const TournamentDataKey = "CBSTournaments";
+const PlayerTournamentKey = "CBSPlayerTournamentID";
+const PlayerTournamentTableKey = "CBSPlayerTournamentTableID";
+const TournamentGroupTag = "CBSTournament";
+
+const DailyBonusDataKey = "CBSDailyBonus";
+const RouletteDataKey = "CBSRoulette";
+const PlayerDailyBonusDataKey = "CBSPlayerDailyBonus";
+const PlayerDailyBonusIndexKey = "CBSPlayerDailyIndex";
+
+const AchievementsDataKey = "CBSAchievements";
+const PlayerAchievementsDataKey = "CBSPlayerAchievements";
+
+const DailyTasksDataKey = "CBSDailyTasks";
+const PlayerDailyTasksDataKey = "CBSPlayerDailyTasks";
+
+// for testing
+const dailyOfset = 0;
+
+
+// expirience
+handlers.GetPlayerExperienceData = function (args, context) {
+    var playerID = currentPlayerId;
+    
+    var currentExp = GetPlayerStatisticValue(playerID, StaticsticExpKey);
+    var levelData = GetTitleData(LevelTitleKey);
+    
+    var result = ParseLevelDetail(levelData, currentExp);
+    return result;
+};
+
+handlers.AddPlayerExperience = function (args, context) {
+    
+    var experienceKey = args.experienceKey;
+    var playerID = currentPlayerId;
+    var newExp = args.expValue;
+    var levelGroupId = args.levelGroupId;
+    
+    var oldValue = GetPlayerStatisticValue(playerID, experienceKey);
+    var levelData = GetTitleData(levelGroupId);
+    var prevLevelResult = ParseLevelDetail(levelData, oldValue);
+    var prevLevel = prevLevelResult.CurrentLevel;
+    
+    var resultValue = oldValue + newExp;
+    
+    var request = {
+        PlayFabId: currentPlayerId, 
+        Statistics:
+        [{
+            StatisticName: experienceKey,
+            Value: resultValue
+        }]
+    };
+    
+    var playerStatResult = server.UpdatePlayerStatistics(request);
+
+    var result = ParseLevelDetail(levelData, resultValue);
+    var updatedLevel = result.CurrentLevel;
+    if (updatedLevel > prevLevel)
+    {
+        return AsignNewLevelResult(result, levelData, updatedLevel, currentPlayerId);
+    }
+    
+    return result;
+};
+
+// Daily Tasks
+handlers.GetDailyTasksTable = function (args, context) {
+	var ProfileID = args.ProfileID;
+	
+    var tasksData = GetDailyTasksData();
+	
+	return tasksData;
+}
+
+handlers.GetDailyTasksState = function (args, context) {
+	var ProfileID = args.ProfileID;
+    var ZoneOfset = args.ZoneOfset;
+    
+    var date = new Date();
+    var time = date.getTime()
+    var fixedTime = time + ZoneOfset;
+    
+    date = new Date(fixedTime);
+    
+    var dayPassed = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+	
+	// get daily tasks data
+	var tasksData = GetDailyTasksData();
+    
+    // get player tasks data
+	var playerRawData = GetPlayerTitleData(ProfileID, PlayerDailyTasksDataKey);
+	if (playerRawData == "")
+		playerRawData = "{}";
+
+	var playerObject = JSON.parse(playerRawData);
+    
+    var lastSavedDay = playerObject.Day;
+	if (lastSavedDay == null)
+		lastSavedDay = 0;
+    
+	// check player tasks state
+    var currentTasks = playerObject.Tasks;
+    var newDay = lastSavedDay == dayPassed;
+	var needToRenerateNewTask = newDay == true || currentTasks == null;
+	
+	// generate new tasks
+	if (needToRenerateNewTask)
+	{
+		var availableTasks = tasksData.DailyTasks;
+		var tasksCount = tasksData.DailyTasksCount;
+		
+		// get player level 
+		var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+		var levelData = GetTitleData(LevelTitleKey);
+		var levelDetail = ParseLevelDetail(levelData, currentExp);
+		var level = levelDetail.CurrentLevel;
+		
+		var cleanTaskList = [];
+		
+		// sort tasks by level
+		availableTasks.forEach(function(task) {
+			var id = task.ID;
+			var type = task.Type;
+			var isLockedByLevel = task.IsLockedByLevel;
+			var lockLevel = task.LockLevel;
+			
+			if (isLockedByLevel)
+			{
+				if (level >= lockLevel)
+				{
+					cleanTaskList.push(task);
+				}
+			}
+			else
+			{
+				cleanTaskList.push(task);
+			}
+		});
+		
+		// get random tasks
+		if (tasksCount > cleanTaskList.length)
+		{
+			tasksCount = cleanTaskList.length;
+		}
+		
+		shuffleArray(cleanTaskList);
+		
+		var randomTasks = [];
+		
+		for (var i = 0;i<tasksCount;i++)
+		{
+			randomTasks.push(cleanTaskList[i]);
+		}
+		
+		// save new tasks for player
+		playerObject.Tasks = randomTasks;
+		playerObject.Day = dayPassed;
+		playerRawData = JSON.stringify(playerObject);
+		var playerData = {};
+		playerData[PlayerDailyTasksDataKey] = playerRawData;
+		
+		var updateDataRequest = {
+			PlayFabId : ProfileID,
+			Data : playerData
+		}
+		
+		server.UpdateUserInternalData(updateDataRequest);
+		
+		currentTasks = randomTasks;
+	}
+	
+	var tasksResult = {
+        Tasks : currentTasks
+    };
+
+	return tasksResult;
+}
+
+// Achievements
+handlers.GetAchievementsTable = function (args, context) {
+	var ProfileID = args.ProfileID;
+	
+    var achievementsData = GetAchievementsData();
+	var achievementsList = achievementsData.Achievements;
+	
+	// get player level 
+	var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+	var levelData = GetTitleData(LevelTitleKey);
+	var levelDetail = ParseLevelDetail(levelData, currentExp);
+	var level = levelDetail.CurrentLevel;
+	
+	// get player achievements data
+	var playerRawData = GetPlayerTitleData(ProfileID, PlayerAchievementsDataKey);
+	if (playerRawData == "")
+		playerRawData = "{}";
+
+	var playerObject = JSON.parse(playerRawData);
+	
+	// set achievements data
+	achievementsList.forEach(function(achievement) {
+		var id = achievement.ID;
+		var type = achievement.Type;
+		var isLockedByLevel = achievement.IsLockedByLevel;
+		var lockLevel = achievement.LockLevel;
+		
+		if (playerObject.hasOwnProperty(id))
+		{
+			var achievementObject = playerObject[id] == null ? {} : playerObject[id];
+			
+			// check complete
+			if (achievementObject.hasOwnProperty('IsComplete'))
+			{
+				achievement.IsComplete = achievementObject['IsComplete']
+			}
+			else
+			{
+				achievement.IsComplete = false;
+			}
+			
+			// check steps
+			if (type == "STEPS")
+			{
+				if (achievementObject.hasOwnProperty('CurrentStep'))
+				{
+					achievement.CurrentStep = achievementObject['CurrentStep']
+				}
+				else
+				{
+					achievement.CurrentStep = 0;
+				}
+			}
+			// check reward
+			if (achievementObject.hasOwnProperty('Rewarded'))
+			{
+				achievement.Rewarded = achievementObject['Rewarded']
+			}
+			else
+			{
+				achievement.Rewarded = false;
+			}
+		}
+		else
+		{
+			// set default state
+			achievement.IsComplete = false;
+			achievement.CurrentStep = 0;
+			achievement.Rewarded = false;
+		}
+		
+		// check lock
+		if (isLockedByLevel)
+		{
+			achievement.IsAvailable = level >= lockLevel;
+		}
+		else
+		{
+			achievement.IsAvailable = true;
+		}
+    });
+	
+	achievementsData.Achievements = achievementsList;
+	
+    return achievementsData;
+}
+
+handlers.AddAchievementPoints = function (args, context) {
+	var ProfileID = args.ProfileID;
+	var Points = args.Points;
+	var Method = args.Method;
+	var AchievementID = args.AchievementID;
+	
+	var achievementsData = GetAchievementsData();
+	var achievementsList = achievementsData.Achievements;
+	var autoReward = achievementsData.AutomaticReward;
+	
+	// find achievement by id
+	var currentAchievement = achievementsList.find(a => a.ID == AchievementID);
+	if (currentAchievement == null)
+		return AchievementNotFoundError();
+	
+	var isLockedByLevel = currentAchievement.IsLockedByLevel;
+	var type = currentAchievement.Type;
+	var id = currentAchievement.ID;
+	var lockLevel = currentAchievement.LockLevel;
+	var maxSteps = currentAchievement.Steps;
+	
+	// get player level 
+	var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+	var levelData = GetTitleData(LevelTitleKey);
+	var levelDetail = ParseLevelDetail(levelData, currentExp);
+	var level = levelDetail.CurrentLevel;
+	
+	// get player achievements data
+	var playerRawData = GetPlayerTitleData(ProfileID, PlayerAchievementsDataKey);
+	if (playerRawData == "")
+		playerRawData = "{}";
+
+	var playerObject = JSON.parse(playerRawData);
+	var achievementObject = playerObject[id] == null ? {} : playerObject[id];
+	
+	// check complete
+	var isComplete = achievementObject.hasOwnProperty('IsComplete') ? achievementObject['IsComplete'] : false;
+	if (isComplete)
+	{
+		return AchievementAlreadyCompletedError();
+	}
+	
+	var rewarded = achievementObject.hasOwnProperty('Rewarded') ? achievementObject['Rewarded'] : false;
+	var curSteps = 0;
+	var available = true;
+	
+	if (type == "STEPS")
+	{
+		curSteps = achievementObject.hasOwnProperty('CurrentStep') ? achievementObject['CurrentStep'] : 0;
+		if (Method == "ADD")
+		{
+			curSteps = curSteps + Points;
+		}
+		else if (Method == "UPDATE")
+		{
+			curSteps = Points;
+		}
+		
+		if (curSteps >= maxSteps)
+		{
+			isComplete = true;
+			curSteps = maxSteps;
+		}
+	}
+	else
+	{
+		isComplete = true;
+	}
+	
+	
+	// check available
+	if (isLockedByLevel)
+	{
+		available = level >= lockLevel;
+	}
+	
+	var justRewarded = false;
+	// reward
+	if (autoReward == true && rewarded == false)
+	{
+		var prize = currentAchievement.Prize;
+		AddPrizes(prize, ProfileID);
+		rewarded = true;
+		justRewarded = true;
+	}
+	var receivedReward = justRewarded == true ? currentAchievement.Prize : null;
+	
+	// save state
+	achievementObject.IsComplete = isComplete;
+	achievementObject.Rewarded = rewarded;
+	achievementObject.CurrentStep = curSteps;
+	achievementObject.IsAvailable = available;
+	
+	playerObject[id] = achievementObject;
+	playerRawData = JSON.stringify(playerObject);
+	
+	var playerData = {};
+    playerData[PlayerAchievementsDataKey] = playerRawData;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+	
+	currentAchievement.IsComplete = isComplete;
+	currentAchievement.IsAvailable = available;
+	currentAchievement.Rewarded = rewarded;
+	currentAchievement.CurrentStep = curSteps;
+	
+	var achievementResult = {
+        Achievement : currentAchievement,
+        ReceivedReward : receivedReward
+    };
+    
+    return achievementResult;
+}
+
+handlers.PickupAchievementReward = function (args, context) {
+	var ProfileID = args.ProfileID;
+	var AchievementID = args.AchievementID;
+	
+	var achievementsData = GetAchievementsData();
+	var achievementsList = achievementsData.Achievements;
+	var autoReward = achievementsData.AutomaticReward;
+	
+	// find achievement by id
+	var currentAchievement = achievementsList.find(a => a.ID == AchievementID);
+	if (currentAchievement == null)
+		return AchievementNotFoundError();
+	
+	var isLockedByLevel = currentAchievement.IsLockedByLevel;
+	var type = currentAchievement.Type;
+	var id = currentAchievement.ID;
+	var lockLevel = currentAchievement.LockLevel;
+	var maxSteps = currentAchievement.Steps;
+	
+	// get player level 
+	var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+	var levelData = GetTitleData(LevelTitleKey);
+	var levelDetail = ParseLevelDetail(levelData, currentExp);
+	var level = levelDetail.CurrentLevel;
+	
+	// get player achievements data
+	var playerRawData = GetPlayerTitleData(ProfileID, PlayerAchievementsDataKey);
+	if (playerRawData == "")
+		playerRawData = "{}";
+
+	var playerObject = JSON.parse(playerRawData);
+	var achievementObject = playerObject[id] == null ? {} : playerObject[id];
+	
+	// check complete
+	var isComplete = achievementObject.hasOwnProperty('IsComplete') ? achievementObject['IsComplete'] : false;
+	if (isComplete == false)
+	{
+		return AchievementNotCompletedError();
+	}
+	
+	var rewarded = achievementObject.hasOwnProperty('Rewarded') ? achievementObject['Rewarded'] : false;
+	var curSteps = 0;
+	var available = true;	
+	
+	// check available
+	if (isLockedByLevel)
+	{
+		available = level >= lockLevel;
+	}
+	
+	var justRewarded = false;
+	// reward
+	if (rewarded == false)
+	{
+		var prize = currentAchievement.Prize;
+		AddPrizes(prize, ProfileID);
+		rewarded = true;
+		justRewarded = true;
+	}
+	else
+	{
+		AchievementAlreadyRewardedError();
+	}
+	var receivedReward = justRewarded == true ? currentAchievement.Prize : null;
+	
+	// save state
+	achievementObject.IsComplete = isComplete;
+	achievementObject.Rewarded = rewarded;
+	achievementObject.CurrentStep = curSteps;
+	achievementObject.IsAvailable = available;
+	
+	playerObject[id] = achievementObject;
+	playerRawData = JSON.stringify(playerObject);
+	
+	var playerData = {};
+    playerData[PlayerAchievementsDataKey] = playerRawData;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+	
+	currentAchievement.IsComplete = isComplete;
+	currentAchievement.IsAvailable = available;
+	currentAchievement.Rewarded = rewarded;
+	currentAchievement.CurrentStep = curSteps;
+	
+	var achievementResult = {
+        Achievement : currentAchievement,
+        ReceivedReward : receivedReward
+    };
+    
+    return achievementResult;
+}
+
+handlers.ResetAchievement = function (args, context) {
+	var ProfileID = args.ProfileID;
+	var AchievementID = args.AchievementID;
+	
+	var achievementsData = GetAchievementsData();
+	var achievementsList = achievementsData.Achievements;
+	
+	// find achievement by id
+	var currentAchievement = achievementsList.find(a => a.ID == AchievementID);
+	if (currentAchievement == null)
+		return AchievementNotFoundError();
+	
+	var isLockedByLevel = currentAchievement.IsLockedByLevel;
+	var type = currentAchievement.Type;
+	var id = currentAchievement.ID;
+	var lockLevel = currentAchievement.LockLevel;
+	var maxSteps = currentAchievement.Steps;
+	
+	// get player achievements data
+	var playerRawData = GetPlayerTitleData(ProfileID, PlayerAchievementsDataKey);
+	if (playerRawData == "")
+		playerRawData = "{}";
+
+	var playerObject = JSON.parse(playerRawData);
+	var achievementObject = playerObject[id] == null ? {} : playerObject[id];
+	
+	// get player level 
+	var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+	var levelData = GetTitleData(LevelTitleKey);
+	var levelDetail = ParseLevelDetail(levelData, currentExp);
+	var level = levelDetail.CurrentLevel;
+	
+	
+	var isComplete = false;
+	var rewarded = false;
+	var curSteps = 0;
+	var available = true;	
+	
+	// check available
+	if (isLockedByLevel)
+	{
+		available = level >= lockLevel;
+	}
+	
+	// save state
+	achievementObject.IsComplete = isComplete;
+	achievementObject.Rewarded = rewarded;
+	achievementObject.CurrentStep = curSteps;
+	achievementObject.IsAvailable = available;
+	
+	playerObject[id] = achievementObject;
+	playerRawData = JSON.stringify(playerObject);
+	
+	var playerData = {};
+    playerData[PlayerAchievementsDataKey] = playerRawData;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+	
+	currentAchievement.IsComplete = isComplete;
+	currentAchievement.IsAvailable = available;
+	currentAchievement.Rewarded = rewarded;
+	currentAchievement.CurrentStep = curSteps;
+    
+    return currentAchievement;
+}
+
+// Matchmaking
+handlers.GetMatchmakingQueue = function (args, context) {
+	var QueueName = args.QueueName;
+	
+    var request = {
+		QueueName : QueueName
+	};
+	
+    var data = multiplayer.GetMatchmakingQueue(request);
+    return data;
+}
+
+handlers.GetMatchmakingList = function (args, context) {
+    var request = {};
+	
+    var data = multiplayer.ListMatchmakingQueues(request);
+    return data;
+}
+
+handlers.UpdateMatchmakingQueue = function (args, context) {
+	var Queue = args.Queue;
+	
+    var request = {
+		MatchmakingQueue : Queue
+	};
+	
+    var data = multiplayer.SetMatchmakingQueue(request);
+    return data;
+}
+
+handlers.RemoveMatchmakingQueue = function (args, context) {
+	var QueueName = args.QueueName;
+	
+    var request = {
+		QueueName : QueueName
+	};
+	
+    var data = multiplayer.RemoveMatchmakingQueue(request);
+    return data;
+}
+
+// Roulette
+handlers.GetRouletteTable = function (args, context) {
+    var ProfileID = args.ProfileID;
+    
+    var data = GetRouletteData();
+    
+    return data;
+}
+
+handlers.SpinRoulette = function (args, context) {
+    var ProfileID = args.ProfileID;
+    
+    var data = GetRouletteData();
+    
+    var positions = data.Positions;
+    
+    var items = [];
+    
+    positions.forEach(function(position) {
+        var weight = position.Weight;
+        var id = position.ID;
+        for (let i = 0; i < weight; i++) {
+            items.push(id);
+        }
+    });
+    
+    var itemID = items[Math.floor(Math.random()*items.length)];
+    
+    var foundItem = positions.find(element => element.ID == itemID);
+    
+    var currentPrize = foundItem.Prize;
+    
+    AddPrizes(currentPrize, ProfileID);
+    
+    return foundItem;
+}
+
+// profile
+handlers.GetPlayerProfile = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var LoadLevel = args.LoadLevel;
+    var LoadClan = args.LoadClan;
+    var LoadEntity = args.LoadEntity;
+    
+    var getProfileRequest = {
+        PlayFabId : ProfileID,
+        ProfileConstraints : {
+            ShowAvatarUrl : true,
+            ShowDisplayName : true
+        }
+    };
+    
+    var jsonLevel = "";
+    var jsonClan = "";
+    var entityID = "";
+    
+    if (LoadLevel == true)
+    {
+        var currentExp = GetPlayerStatisticValue(ProfileID, StaticsticExpKey);
+        var levelData = GetTitleData(LevelTitleKey);
+        var levelDetail = ParseLevelDetail(levelData, currentExp);
+        jsonLevel = JSON.stringify(levelDetail);
+    }
+    
+    if (LoadClan == true || LoadEntity)
+    {
+        var accountRequest = {
+            PlayFabId : ProfileID
+        };
+        var accountResult = server.GetUserAccountInfo(accountRequest);
+        var userInfo = accountResult.UserInfo;
+        var titleInfo = userInfo.TitleInfo;
+        var entityInfo = titleInfo.TitlePlayerAccount;
+        entityID = entityInfo.Id;
+        
+        if (LoadClan)
+        {
+            var clanName = "";
+            var clanID = GetUserClanID(entityID);
+            var exist = false;
+        
+            if (clanID != "")
+            {
+                exist = true;
+                
+                var clanEntity = {
+                    Id : clanID,
+                    Type : "group"
+                };
+                
+                var groupRequest = {
+                    Group : clanEntity
+                };
+                
+                var groupResult = entity.GetGroup(groupRequest);
+                
+                clanName = groupResult.GroupName;
+            }
+            
+            var clanResult = {
+                ExistInClan: exist,
+                ClanID: clanID,
+                ClanName: clanName
+            };
+            
+            jsonClan = JSON.stringify(clanResult);
+        }
+    }
+    
+    var result = server.GetPlayerProfile(getProfileRequest);
+    var profile = result.PlayerProfile;
+    
+    var profileResult = {
+        ProfileID : profile.PlayerId,
+        DisplayName : profile.DisplayName,
+        AvatarUrl : profile.AvatarUrl,
+        LevelData : jsonLevel,
+        ClanData : jsonClan,
+        EntityID : entityID
+    };
+    
+    return profileResult;
+}
+
+// daily Bonus
+handlers.ResetDailyBonus = function (args, context) {
+    var ProfileID = args.ProfileID;
+    
+    var playerData = {};
+    playerData[PlayerDailyBonusIndexKey] = 0;
+    playerData[PlayerDailyBonusDataKey] = 0;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+}
+
+
+handlers.CollectDailyBonus = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var ZoneOfset = args.ZoneOfset;
+    
+    var date = new Date();
+    var time = date.getTime()
+    var fixedTime = time + ZoneOfset;
+    //var fixedTime = time + ZoneOfset + 86400000 * dailyOfset;
+    
+    date = new Date(fixedTime);
+    
+    var dayPassed = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+    
+    var userDailydata = GetPlayerDailyBonusData(ProfileID);
+    
+    var lastSavedDay = userDailydata.Day;
+    
+    var lastSavedIndex = userDailydata.Index;
+    
+    var picked = lastSavedDay == dayPassed;
+    
+    if (picked)
+    {
+        DailyBonusCollectedError();
+    }
+    
+    var currentDailyIndex = dayPassed == lastSavedDay + 1 ? lastSavedIndex + 1 : lastSavedIndex;
+    
+    var data = GetDailyBonusData();
+    
+    var prizes = data.DaliyPrizes;
+    
+    var newDailyIndex = currentDailyIndex;
+    var newDailyIndex = currentDailyIndex == 0 ? currentDailyIndex + 1 : currentDailyIndex;
+    
+    var newSavedDay = dayPassed;
+    
+    var prizeNotFound = currentDailyIndex >= prizes.length;
+    
+    var prizeIndex = currentDailyIndex == 0 ? currentDailyIndex : currentDailyIndex - 1;
+    
+    var currentPrize = prizeNotFound == true ? prizes[prizes.length - 1] : prizes[prizeIndex];
+    
+    var playerData = {};
+    playerData[PlayerDailyBonusIndexKey] = newDailyIndex;
+    playerData[PlayerDailyBonusDataKey] = newSavedDay;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+    
+    AddPrizes(currentPrize, ProfileID);
+    
+    return currentPrize;
+}
+
+handlers.GetDailyBonus = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var ZoneOfset = args.ZoneOfset;
+    
+    var date = new Date();
+    var time = date.getTime()
+    var fixedTime = time + ZoneOfset;
+    
+    date = new Date(fixedTime);
+    
+    var dayPassed = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+    
+    var userDailydata = GetPlayerDailyBonusData(ProfileID);
+    
+    var lastSavedDay = userDailydata.Day;
+    
+    var lastSavedIndex = userDailydata.Index;
+    
+    var picked = lastSavedDay == dayPassed;
+    
+    var currentDailyIndex = dayPassed == lastSavedDay + 1 ? lastSavedIndex + 1 : lastSavedIndex;
+    
+    var data = GetDailyBonusData();
+    
+    var daysCount = data.DaliyPrizes.length;
+    
+    var endCondition = currentDailyIndex > daysCount && !picked;
+    
+    currentDailyIndex = dayPassed == lastSavedDay ? lastSavedIndex - 1 : lastSavedIndex;
+    
+    if (dayPassed - lastSavedDay >= 2 && lastSavedDay != 0 || endCondition)
+    {
+        var newDailyIndex = 0;
+        var newSavedDay = 0;
+        
+        var playerData = {};
+        playerData[PlayerDailyBonusIndexKey] = newDailyIndex;
+        playerData[PlayerDailyBonusDataKey] = newSavedDay;
+        
+        var updateDataRequest = {
+            PlayFabId : ProfileID,
+            Data : playerData
+        }
+        
+        server.UpdateUserInternalData(updateDataRequest);
+        
+        currentDailyIndex = 0;
+    }
+    
+    var result = {
+        CurrentDailyIndex : currentDailyIndex,
+        Picked : picked,
+        DailyData : data
+    };
+    
+    return result;
+}
+
+// tournaments
+handlers.GetTournament = function (args, context) {
+    var TournamentID = args.TournamentID;
+    var currentTournament = GetTournamentByID(TournamentID);
+    return currentTournament;
+}
+
+handlers.GetAllTournament = function (args, context) {
+    var tournamentData = GetTournamentData();
+    return tournamentData;
+}
+
+handlers.FinishTournament = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var PlayerEntityID = args.PlayerEntityID;
+    
+    var playerTournamentID = GetPlayerTitleData(ProfileID, PlayerTournamentKey);
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    if (playerTournamentTableID == "")
+    {
+        return NoTournamentExist();
+    }
+    
+    if (playerTournamentID == "")
+    {
+        var tournamentData = GetTournamentData();
+        var defaultTournament = GetDefaultTournament(tournamentData);
+        playerTournamentID = defaultTournament.TounamentID;
+    }
+    
+    var tournamentEntity = {
+        Id : playerTournamentTableID,
+        Type : "group"
+    };
+    
+    // check if tournament is not finished
+    var objectRequest = {
+        Entity : tournamentEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    var endDate = objectsResult.Objects.FinishTime.DataObject;
+    var now = new Date();
+    var time = now.getTime();
+    
+    if (time < endDate)
+    {
+        return NotFinishedTournamentError();
+    }
+    
+    var currentTournament = GetTournamentByID(playerTournamentID);
+    
+    var leaderboard = GetTournamentLeaderbaord(playerTournamentTableID);
+    
+    var playerPosition = 0;
+    var nextTournamentID = "";
+    
+    leaderboard.forEach(function(leader) {
+        if (leader.PlayFabId == ProfileID)
+        {
+            playerPosition = leader.Position + 1;
+        }
+    });
+    
+    var positions = currentTournament.Positions;
+    var currentPosition = positions[playerPosition - 1];
+    
+    var prizeObject = currentPosition.Prizes;
+    
+    AddPrizes(prizeObject, ProfileID);
+    
+    var goNext = currentPosition.NextTournament;
+    var goDown = currentPosition.DowngradeTournament;
+    
+    if (goNext == false && goDown == false)
+    {
+        nextTournamentID = playerTournamentID;
+    }
+    else if (goNext == true)
+    {
+        nextTournamentID = currentTournament.NextTournamentID;
+    }
+    else if (goDown == true)
+    {
+        nextTournamentID = currentTournament.DowngradeTournamentID;
+    }
+    
+    var newTurnamentData = GetTournamentByID(nextTournamentID);
+    var newTournamentName = newTurnamentData.TournamentName;
+    
+    // try remove tournament from search table
+    var tournamentEntity = {
+        Id : playerTournamentTableID,
+        Type : "group"
+    };
+    
+    var objectRequest = {
+        Entity : tournamentEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    
+    var connectedTableID = objectsResult.Objects.TableID.DataObject;
+    
+    var tableEntity = {
+        Id : connectedTableID,
+        Type : "group"
+    };
+    
+    var removeRequest = {
+        Objects: [
+            {
+                ObjectName : playerTournamentTableID,
+                DeleteObject : true
+            }
+        ],
+        Entity: tableEntity
+    };
+    try
+    {
+        entity.SetObjects(removeRequest);
+    }
+    catch{}
+    
+    // clear internal data
+    
+    var removeInternalDataRequest = {
+        PlayFabId : ProfileID,
+        KeysToRemove : [PlayerTournamentTableKey]
+    };
+    
+    server.UpdateUserInternalData(removeInternalDataRequest);
+    
+    // update player tournament key
+    var playerData = {};
+    playerData[PlayerTournamentKey] = nextTournamentID;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+    
+    return {
+        ProfileID : ProfileID,
+        Position : playerPosition,
+        Prize : prizeObject,
+        NewTournamentID : nextTournamentID,
+        NewTournamentName : newTournamentName
+    };
+}
+
+handlers.LeaveTournament = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var PlayerEntityID = args.PlayerEntityID;
+    
+    var playerTournamentID = GetPlayerTitleData(ProfileID, PlayerTournamentKey);
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    if (playerTournamentTableID == "")
+    {
+        return NoTournamentExist();
+    }
+    
+    // remove from leaderboard
+    var removeFromSharedGroupRequest = {
+        SharedGroupId : playerTournamentTableID,
+        KeysToRemove : [ProfileID]
+    };
+    
+    try
+    {
+        server.UpdateSharedGroupData(removeFromSharedGroupRequest);
+    }
+    catch {}
+    
+    // remove from group
+    var playerEntity = {
+        Id : PlayerEntityID,
+        Type : "title_player_account"
+    };
+    
+    var tournamentEntity = {
+        Id : playerTournamentTableID,
+        Type : "group"
+    };
+    
+    var removeFromGroupRequest = {
+        Group : tournamentEntity,
+        Members : [playerEntity]
+    };
+    
+    entity.RemoveMembers(removeFromGroupRequest);
+    
+    // clear internal data
+    
+    var removeInternalDataRequest = {
+        PlayFabId : ProfileID,
+        KeysToRemove : [PlayerTournamentTableKey]
+    };
+    
+    server.UpdateUserInternalData(removeInternalDataRequest);
+    
+    return ProfileID;
+}
+
+handlers.GetTournamentState = function (args, context) {
+    var ProfileID = args.ProfileID;
+    
+    var tournamentData = GetTournamentData();
+    
+    var allTournament = tournamentData.Tournaments;
+    var duration = tournamentData.DateTimestamp;
+    
+    var playerTournamentID = GetPlayerTitleData(ProfileID, PlayerTournamentKey);
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    var joined = playerTournamentTableID != "";
+	
+    if (playerTournamentID == "" || GetTournamentByID(playerTournamentID) == null)
+    {
+		if (joined)
+		{
+			var removeInternalDataRequest = {
+				PlayFabId : ProfileID,
+				KeysToRemove : [PlayerTournamentTableKey]
+			};
+			server.UpdateUserInternalData(removeInternalDataRequest);
+			joined = false;
+			playerTournamentTableID = "";
+		}
+        var defaultTournament = GetDefaultTournament(tournamentData);
+        playerTournamentID = defaultTournament.TounamentID;
+    }
+	
+    var currentTournament = GetTournamentByID(playerTournamentID);
+    var tournamentName = currentTournament.TournamentName;
+    
+    var allResults = [];
+    var isFinished = false;
+    var timeLeft = 0;
+    
+    if (joined)
+    {
+        allResults = GetTournamentLeaderbaord(playerTournamentTableID);
+        
+        var tournamentEntity = {
+            Id : playerTournamentTableID,
+            Type : "group"
+        };
+        
+        var objectRequest = {
+            Entity : tournamentEntity
+        };
+        
+        var objectsResult = entity.GetObjects(objectRequest);
+        var endDate = objectsResult.Objects.FinishTime.DataObject;
+        var now = new Date();
+        var time = now.getTime();
+        
+        isFinished = time >= endDate;
+        timeLeft = endDate - time;
+    }
+    
+    return {
+        ProfileID : ProfileID,
+        PlayerTournamentID : playerTournamentID,
+        TournamentName : tournamentName,
+        Joined : joined,
+        Leaderboard : allResults,
+        Finished : isFinished,
+        TimeLeft : timeLeft
+    };
+}
+
+function GetTournamentLeaderbaord(tournamentGroupID)
+{
+    var tournamentEntity = {
+        Id : tournamentGroupID,
+        Type : "group"
+    };
+    
+    var getMembersRequest = {
+        Group : tournamentEntity
+    };
+    
+    var membersResult = entity.ListGroupMembers(getMembersRequest);
+    var members = membersResult.Members[1].Members;
+    
+    var profilesIDs = members.map(a => a.Lineage.master_player_account.Id);
+    
+    var getSharedDataRequest = {
+        SharedGroupId : tournamentGroupID
+    };
+    
+    var dataResult = server.GetSharedGroupData(getSharedDataRequest);
+    
+    var tournamentData = dataResult.Data;
+    
+    var allResults = [];
+    
+    profilesIDs.forEach(function(playerID) {
+        var playerData = tournamentData.hasOwnProperty(playerID) ? tournamentData[playerID] : null;
+        if (playerData == null)
+        {
+            var playerResult = {
+                PlayerID : playerID,
+                PlayerName : "Unknown",
+                Points : 0
+            };
+            allResults.push(playerResult);
+        }
+        else
+        {
+            var data = JSON.parse(playerData.Value);
+            var playerResult = {
+                PlayFabId : playerID,
+                DisplayName : data.PlayerName,
+                StatValue : data.Point,
+                Position : 0
+            };
+            allResults.push(playerResult);
+            
+        }
+    })
+    
+    if (allResults.length > 0)
+    {
+        allResults = allResults.sort((a, b) => a.StatValue - b.StatValue);
+        
+        allResults = allResults.reverse();
+        
+        allResults.forEach(function(leader) {
+            leader.Position = allResults.indexOf(leader);
+        });
+    }
+    
+    return allResults;
+}
+
+handlers.FindAndJoinTournament = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var PlayerEntityID = args.PlayerEntityID;
+    
+    var playerTournamentID = GetPlayerTitleData(ProfileID, PlayerTournamentKey);
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    
+    if (playerTournamentTableID != "")
+    {
+        return TournamentAllreadyExist();
+    }
+    
+    if (playerTournamentID == "" || GetTournamentByID(playerTournamentID) == null)
+    {
+        var tournamentData = GetTournamentData();
+        var defaultTournament = GetDefaultTournament(tournamentData);
+        playerTournamentID = defaultTournament.TounamentID;
+    }
+    
+    var currentTournament = GetTournamentByID(playerTournamentID);
+    
+    var positions = currentTournament.Positions;
+    var maxMembers = positions == null ? 0 : positions.length;
+    
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth();
+    var touramnentTableID = TournamentTablePrefix + year + month + playerTournamentID;
+    
+    var tableID = touramnentTableID;
+    
+    var groupRequest = {
+        GroupName : tableID
+    };
+    
+    var tableGroupResult = null;
+    
+    try
+    {
+        tableGroupResult = entity.GetGroup(groupRequest);
+    }
+    catch
+    {
+        // table not found
+        var createGroupRequest = {
+            GroupName : tableID
+        }
+        var createResult = entity.CreateGroup(createGroupRequest);
+        var tableGroupID = createResult.Group.Id;
+        AsignNewTournamentGroup(tableGroupID, playerTournamentID);
+        tableGroupResult = entity.GetGroup(groupRequest);
+    }
+    
+    var tableGroupID = tableGroupResult.Group.Id;
+    
+    var tableEntity = {
+        Id : tableGroupID,
+        Type : "group"
+    };
+    
+    var tableMembersRequest = {
+        Entity : tableEntity
+    };
+    
+    var tableListResult = entity.GetObjects(tableMembersRequest);
+    
+    var groupList = tableListResult.Objects;
+    var groupCount = Object.keys(groupList).length;
+    
+    var groupIDToJoin = "";
+    
+    if (groupCount == 0)
+    {
+        // create new tournament group
+        groupIDToJoin = AsignNewTournamentGroup(tableGroupID, playerTournamentID);
+    }
+    else
+    {
+        // get random tournament
+        var keys = Object.keys(groupList);
+        var randomKey = keys[ keys.length * Math.random() << 0];
+        groupIDToJoin = randomKey
+    }
+    
+    var tournamentEntity = {
+        Id : groupIDToJoin,
+        Type : "group"
+    };
+    
+    // check if tournament is not finished
+    var objectRequest = {
+        Entity : tournamentEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    var endDate = objectsResult.Objects.FinishTime.DataObject;
+    var now = new Date();
+    var time = now.getTime();
+    
+    if (time >= endDate)
+    {
+        //if tournament is finished - remove it from table
+        var removeRequest = {
+            Objects: [
+                {
+                    ObjectName : groupIDToJoin,
+                    DeleteObject : true
+                }
+            ],
+            Entity: tableEntity
+        };
+        try
+        {
+            entity.SetObjects(removeRequest);
+        }
+        catch{}
+        
+        groupIDToJoin = AsignNewTournamentGroup(tableGroupID, playerTournamentID);
+        
+        tournamentEntity = {
+            Id : groupIDToJoin,
+            Type : "group"
+        };
+    }
+    
+    
+    var playerEntity = {
+        Id : PlayerEntityID,
+        Type : "title_player_account"
+    };
+    
+    // join player to tournamentID
+    var addMemberRequest = { 
+        Group: tournamentEntity, 
+        Members: [playerEntity] 
+    }
+    
+    entity.AddMembers(addMemberRequest);
+    
+    var tournamentsMemberCount = GetTournamentMemberCount(groupIDToJoin);
+    
+    // if tournament is full - remove it from table
+    if (tournamentsMemberCount >= maxMembers)
+    {
+        var removeRequest = {
+            Objects: [
+                {
+                    ObjectName : groupIDToJoin,
+                    DeleteObject : true
+                }
+            ],
+            Entity: tableEntity
+        };
+        try
+        {
+            entity.SetObjects(removeRequest);
+        }
+        catch{}
+    }
+    
+    // finaly asign tournament id to player
+    var playerData = {};
+    playerData[PlayerTournamentTableKey] = groupIDToJoin;
+    playerData[PlayerTournamentKey] = playerTournamentID;
+    
+    var updateDataRequest = {
+        PlayFabId : ProfileID,
+        Data : playerData
+    }
+    
+    server.UpdateUserInternalData(updateDataRequest);
+    
+    SetTournamentPoint(ProfileID, groupIDToJoin, 0);
+    
+    return groupIDToJoin;
+}
+
+handlers.AddPlayerTournamentPoint = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var Point = args.Point;
+    
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    if (playerTournamentTableID == "")
+    {
+        return NoTournamentExist();
+    }
+    
+    var getSharedDataRequest = {
+        SharedGroupId : playerTournamentTableID
+    };
+    
+    var dataResult = server.GetSharedGroupData(getSharedDataRequest);
+    
+    var tournamentData = dataResult.Data;
+    
+    var playerData = tournamentData.hasOwnProperty(ProfileID) ? tournamentData[ProfileID] : null;
+
+    if (playerData != null)
+    {
+        var data = JSON.parse(playerData.Value);
+    
+        var points = data.Point;
+        
+        var newPoints = points + Point;
+    
+        SetTournamentPoint (ProfileID, playerTournamentTableID, newPoints);
+    }
+}
+
+handlers.UpdatePlayerTournamentPoint = function (args, context) {
+    var ProfileID = args.ProfileID;
+    var Point = args.Point;
+    
+    var playerTournamentTableID = GetPlayerTitleData(ProfileID, PlayerTournamentTableKey);
+    if (playerTournamentTableID == "")
+    {
+        return NoTournamentExist();
+    }
+    
+    SetTournamentPoint (ProfileID, playerTournamentTableID, Point);
+}
+
+function SetTournamentPoint(playerID, tournamentGroupID, point)
+{
+    var tournamentEntity = {
+        Id : tournamentGroupID,
+        Type : "group"
+    };
+    
+    // check if tournament is not finished
+    var objectRequest = {
+        Entity : tournamentEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    var endDate = objectsResult.Objects.FinishTime.DataObject;
+    var now = new Date();
+    var time = now.getTime();
+    
+    var getProfileRequest = {
+        PlayFabId : playerID,
+        ProfileConstraints : {
+            ShowDisplayName : true
+        }
+    };
+    
+    if (time > endDate)
+    {
+        return NoActiveTournamentError();
+    }
+    
+    var profileResult = server.GetPlayerProfile(getProfileRequest);
+    var playerName = profileResult.PlayerProfile.DisplayName;
+    
+    var playerData = {
+        PlayerID : playerID,
+        PlayerName : playerName,
+        Point : point
+    };
+    
+    var rawData = JSON.stringify(playerData);
+    
+    var updateData = {};
+    updateData[playerID] = rawData;
+    
+    var updateRequest = {
+        SharedGroupId : tournamentGroupID,
+        Data : updateData
+    };
+    
+    server.UpdateSharedGroupData(updateRequest);
+}
+
+function GetTournamentMemberCount(tournamentGroupID)
+{
+    var tournamentEntity = {
+        Id : tournamentGroupID,
+        Type : "group"
+    };
+    
+    var groupRequest = {
+        Group : tournamentEntity
+    };
+    
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    
+    var members = membersResult.Members;
+    
+    var membersCount = 0;
+    
+    members.forEach(function(role) {
+        if (role.RoleId != "admins")
+            membersCount += role.Members.length;
+    });
+    
+    return membersCount;
+}
+
+function AsignNewTournamentGroup(tableID, tournamentID)
+{
+    var tournamentData = GetTournamentData();
+    var duration = tournamentData.DateTimestamp;
+    var currentTournament = GetTournamentByID(tournamentID);
+    var tournamentName = currentTournament.TournamentName;
+    
+    var tableEntity = {
+        Id : tableID,
+        Type : "group"
+    };
+    
+    var createGroupRequest = {
+        GroupName : NewGuid()
+    }
+    
+    var createResult = entity.CreateGroup(createGroupRequest);
+    
+    var tournamentGroupID = createResult.Group.Id;
+    
+    // calculate finish time
+    var now = new Date();
+    var time = now.getTime();
+    var finishTime = time + duration;
+    
+    var tournamentEntity = {
+        Id : tournamentGroupID,
+        Type : "group"
+    };
+    
+    var apirequest = {
+        Objects: [
+            {
+                ObjectName : "TournamentID",
+                DataObject : tournamentID
+            },
+            {
+                ObjectName : "TournamentName",
+                DataObject : tournamentName
+            },
+            {
+                ObjectName : "FinishTime",
+                DataObject : finishTime
+            },
+            {
+                ObjectName : "TableID",
+                DataObject : tableID
+            },
+            {
+                ObjectName : "Tag",
+                DataObject : TournamentGroupTag
+            }
+        ],
+        Entity: tournamentEntity
+    }
+    
+    entity.SetObjects(apirequest);
+    
+    // insert tournament to table
+    
+    var insertRequest = {
+        Objects: [
+            {
+                ObjectName : tournamentGroupID,
+                DataObject : tournamentGroupID
+            }
+        ],
+        Entity: tableEntity
+    }
+    
+    entity.SetObjects(insertRequest);
+    
+    // create group shared group data 
+    var sharedRequest = {
+        SharedGroupId : tournamentGroupID
+    };
+    
+    server.CreateSharedGroup(sharedRequest);
+    
+    return tournamentGroupID;
+}
+
+// friends
+
+handlers.GetFriendsList = function (args, context) {
+    var friendsRequest = {
+        PlayFabId: currentPlayerId,
+        ProfileConstraints : {
+            ShowAvatarUrl : true,
+            ShowDisplayName : true
+        }
+    };
+    var friendResult = server.GetFriendsList(friendsRequest);
+    return friendResult;
+}
+
+handlers.SendFriendRequest = function (args, context) {
+    friendID = args.friendID;
+    
+    var request = {
+        PlayFabId: currentPlayerId,
+        FriendPlayFabId: friendID
+    };
+    
+    var addResult = server.AddFriend(request);
+    
+    request.PlayFabId = friendID;
+    request.FriendPlayFabId = currentPlayerId;
+    
+    addResult = server.AddFriend(request);
+    
+    var setTagRequset = {
+        PlayFabId: friendID,
+        FriendPlayFabId: currentPlayerId,
+        Tags: [FriendsRequestTag]
+    };
+    
+    var tagResult = server.SetFriendTags(setTagRequset);
+    
+    return tagResult;
+}
+
+handlers.RemoveFriend = function (args, context) {
+    friendID = args.friendID;
+    
+    var request = {
+        PlayFabId: currentPlayerId,
+        FriendPlayFabId: friendID
+    };
+    
+    var removeResult = server.RemoveFriend(request);
+    
+    request.PlayFabId = friendID;
+    request.FriendPlayFabId = currentPlayerId;
+    
+    removeResult = server.RemoveFriend(request);
+    
+    return removeResult;
+}
+
+handlers.AcceptFriend = function (args, context) {
+    friendID = args.friendID;
+    
+    var setTagRequset = {
+        PlayFabId: friendID,
+        FriendPlayFabId: currentPlayerId,
+        Tags: [FriendsAcceptTag]
+    };
+    
+    var tagResult = server.SetFriendTags(setTagRequset);
+    
+    setTagRequset.PlayFabId = currentPlayerId;
+    setTagRequset.FriendPlayFabId = friendID;
+    
+    tagResult = server.SetFriendTags(setTagRequset);
+    
+    return tagResult;
+}
+
+handlers.ForceAddFriend = function (args, context) {
+    friendID = args.friendID;
+    
+    var request = {
+        PlayFabId: currentPlayerId,
+        FriendPlayFabId: friendID
+    };
+    
+    var addResult = server.AddFriend(request);
+    
+    request.PlayFabId = friendID;
+    request.FriendPlayFabId = currentPlayerId;
+    
+    addResult = server.AddFriend(request);
+    
+    var setTagRequset = {
+        PlayFabId: friendID,
+        FriendPlayFabId: currentPlayerId,
+        Tags: [FriendsAcceptTag]
+    };
+    
+    var tagResult = server.SetFriendTags(setTagRequset);
+    
+    setTagRequset.PlayFabId = currentPlayerId;
+    setTagRequset.FriendPlayFabId = friendID;
+    
+    tagResult = server.SetFriendTags(setTagRequset);
+    
+    return tagResult;
+}
+
+// leaderboards
+handlers.AddClanStatisticPoint = function (args, context) {
+    var clanID = args.clanID;
+    var statisitcName = args.statisticName;
+    var value = args.value;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var objectRequest = {
+        Entity : clanEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    var statisticProfile = objectsResult.Objects.StatisticProfile.DataObject;
+    
+    var oldValue = GetPlayerStatisticValue(statisticProfile, statisitcName);
+    var newValue = oldValue + value;
+    
+    var request = {
+        PlayFabId: statisticProfile, 
+        Statistics:
+        [{
+            StatisticName: statisitcName,
+            Value: newValue
+        }]
+    };
+    
+    var playerStatResult = server.UpdatePlayerStatistics(request);
+    return playerStatResult;
+}
+
+handlers.UpdateClanStatisticPoint = function (args, context) {
+    var clanID = args.clanID;
+    var statisitcName = args.statisticName;
+    var value = args.value;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var objectRequest = {
+        Entity : clanEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    var statisticProfile = objectsResult.Objects.StatisticProfile.DataObject;
+    
+    var request = {
+        PlayFabId: statisticProfile, 
+        Statistics:
+        [{
+            StatisticName: statisitcName,
+            Value: value
+        }]
+    };
+    
+    var playerStatResult = server.UpdatePlayerStatistics(request);
+    return playerStatResult;
+}
+
+handlers.UpdateStatisticPoint = function (args, context) {
+    var profileID = args.profileID;
+    var statisitcName = args.statisticName;
+    var value = args.value;
+    
+    var request = {
+        PlayFabId: profileID, 
+        Statistics:
+        [{
+            StatisticName: statisitcName,
+            Value: value
+        }]
+    };
+    
+    var playerStatResult = server.UpdatePlayerStatistics(request);
+    return playerStatResult;
+}
+
+handlers.AddStatisticPoint = function (args, context) {
+    var profileID = args.profileID;
+    var statisitcName = args.statisticName;
+    var value = args.value;
+    
+    var oldValue = GetPlayerStatisticValue(profileID, statisitcName);
+    var newValue = oldValue + value;
+    
+    var request = {
+        PlayFabId: profileID, 
+        Statistics:
+        [{
+            StatisticName: statisitcName,
+            Value: newValue
+        }]
+    };
+    
+    var playerStatResult = server.UpdatePlayerStatistics(request);
+    return playerStatResult;
+}
+
+handlers.GetClanLeaders = function (args, context) {
+    var viewerEntityID = args.viewerEntityID;
+    var statisitcName = args.statisticName;
+    var maxCount = args.maxCount;
+    
+    var connectedClanID = "";
+    var statisticProfile = "";
+    
+    var viewerEntity = {
+        Id : viewerEntityID,
+        Type : "title_player_account"
+    }
+    
+    connectedClanID = GetUserClanID(viewerEntityID);
+    
+    if (connectedClanID != "")
+    {
+        var clanEntity = {
+            Id : connectedClanID,
+            Type : "group"
+        };
+        
+        var objectRequest = {
+            Entity : clanEntity
+        };
+        
+        var objectsResult = entity.GetObjects(objectRequest);
+        statisticProfile = objectsResult.Objects.StatisticProfile.DataObject;
+    }
+    
+    var playerProfile = null;
+    
+    var request = {
+        MaxResultsCount : maxCount,
+        StatisticName : statisitcName,
+        ProfileConstraints : {
+            ShowTags : true
+        }
+    };
+    
+    var result = server.GetLeaderboard(request);
+    
+    var leaderboardList = [];
+    
+    var fabLeaderboard = result.Leaderboard;
+    
+    fabLeaderboard.forEach(function(member) {
+        var clanID = "";
+        var clanName = "";
+        
+        var titleID = member.Profile.TitleId;
+        var partToReplace = `title.${titleID}.`;
+        
+        var tags = member.Profile.Tags;
+        if (tags.length > 0)
+        {
+            clanID = tags[0].TagValue;
+            clanName = tags[1].TagValue;
+        }
+        
+        clanID = clanID.replace(partToReplace, "");
+        clanName = clanName.replace(partToReplace, "");
+        
+        var newProfile = {
+            ClanId : clanID,
+            ClanName : clanName,
+            StatValue : member.StatValue, 
+            Position : member.Position,
+            CurrentClanId : connectedClanID
+        };
+        if (newProfile.StatValue != 0)
+            leaderboardList.push(newProfile);
+    });
+    
+    if (statisticProfile != "")
+    {
+        var playerRequest = {
+            MaxResultsCount : 1,
+            StatisticName : statisitcName,
+            PlayFabId : statisticProfile,
+                ProfileConstraints : {
+                ShowTags : true
+            }
+        };
+        
+        var playerResult = server.GetLeaderboardAroundUser(playerRequest);
+        var playerPosition = playerResult.Leaderboard;
+        var player = playerPosition[0];
+        
+        var clanID = "";
+        var clanName = "";
+        
+        var titleID = player.Profile.TitleId;
+        var partToReplace = `title.${titleID}.`;
+        
+        var tags = player.Profile.Tags;
+        if (tags.length > 0)
+        {
+            clanID = tags[0].TagValue;
+            clanName = tags[1].TagValue;
+        }
+        
+        clanID = clanID.replace(partToReplace, "");
+        clanName = clanName.replace(partToReplace, "");
+        
+        var playerProfile = {
+            ClanId : clanID,
+            ClanName : clanName,
+            StatValue : player.StatValue, 
+            Position : player.Position,
+            CurrentClanId : connectedClanID
+        };
+    }
+    
+    return {
+        ProfileResult : playerProfile,
+        Leaderboards : leaderboardList
+    };
+}
+
+handlers.GetLeaderboard = function (args, context) {
+    var profileID = args.profileID;
+    var statisitcName = args.statisticName;
+    var maxCount = args.maxCount;
+    
+    var request = {
+        MaxResultsCount : maxCount,
+        StatisticName : statisitcName,
+        ProfileConstraints : {
+            ShowAvatarUrl : true,
+            ShowDisplayName : true
+        }
+    };
+    
+    var result = server.GetLeaderboard(request);
+    
+    var leaderboardList = [];
+    
+    var fabLeaderboard = result.Leaderboard;
+    
+    fabLeaderboard.forEach(function(member) {
+        var newProfile = {
+            PlayFabId : member.PlayFabId,
+            DisplayName : member.DisplayName,
+            StatValue : member.StatValue, 
+            Position : member.Position,
+            AvatarUrl : member.Profile.AvatarUrl
+        };
+        
+        leaderboardList.push(newProfile);
+    });
+    
+    var playerRequest = {
+        MaxResultsCount : 1,
+        StatisticName : statisitcName,
+        PlayFabId : profileID,
+        ProfileConstraints : {
+            ShowAvatarUrl : true,
+            ShowDisplayName : true
+        }
+    };
+    
+    var playerResult = server.GetLeaderboardAroundUser(playerRequest);
+    var playerPosition = playerResult.Leaderboard;
+    var player = playerPosition[0];
+    
+    var playerProfile = {
+        PlayFabId : player.PlayFabId,
+        DisplayName : player.DisplayName,
+        StatValue : player.StatValue, 
+        Position : player.Position,
+        AvatarUrl : player.Profile.AvatarUrl
+    };
+    
+    return {
+        ProfileResult : playerProfile,
+        Leaderboards : leaderboardList
+    };
+}
+
+handlers.GetFriendsLeaderboard = function (args, context) {
+    var profileID = args.profileID;
+    var statisitcName = args.statisticName;
+    var maxCount = args.maxCount;
+    
+    var request = {
+        MaxResultsCount : maxCount,
+        StatisticName : statisitcName,
+        PlayFabId : profileID,
+        ProfileConstraints : {
+            ShowAvatarUrl : true,
+            ShowDisplayName : true
+        }
+    };
+    
+    var result = server.GetFriendLeaderboard(request);
+    
+    var playerProfile = null;
+    
+    var leaderboardList = [];
+    
+    var fabLeaderboard = result.Leaderboard;
+    
+    fabLeaderboard.forEach(function(member) {
+        var newProfile = {
+            PlayFabId : member.PlayFabId,
+            DisplayName : member.DisplayName,
+            StatValue : member.StatValue, 
+            Position : member.Position,
+            AvatarUrl : member.Profile.AvatarUrl
+        };
+        
+        if (member.PlayFabId == profileID)
+        {
+            playerProfile = newProfile;
+        }
+        
+        leaderboardList.push(newProfile);
+    });
+    
+    return {
+        ProfileResult : playerProfile,
+        Leaderboards : leaderboardList
+    };
+}
+
+// clan
+handlers.GetUserClan = function (args, context) {
+    var entityID = args.EntityID;
+    
+    var clanID = "";
+    var clanName = "";
+    var exist = false;
+    
+    clanID = GetUserClanID(entityID);
+    
+    if (clanID != "")
+    {
+        exist = true;
+        
+        var clanEntity = {
+            Id : clanID,
+            Type : "group"
+        };
+        
+        var groupRequest = {
+            Group : clanEntity
+        };
+        
+        var groupResult = entity.GetGroup(groupRequest);
+        
+        clanName = groupResult.GroupName;
+    }
+    
+    return {
+        ExistInClan: exist,
+        ClanID: clanID,
+        ClanName: clanName
+    };
+}
+
+handlers.GetClanMemberships = function (args, context) {
+    var clanID = args.ClanID;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var responseList = [];
+    
+    var adminID = "";
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    var memberGroup = membersResult.Members;
+    
+    memberGroup.forEach(function(role) {
+        if (role.RoleId == "admins")
+        {
+            adminID = role.Members[0].Lineage.master_player_account.Id;
+        }
+        var members = role.Members;
+        members.forEach(function(member) {
+            var entityID = member.Key.Id;
+            var profileID = member.Lineage.master_player_account.Id;
+            
+            var newProfile = {
+                ClanAdminID : adminID,
+                ClanId : clanID, 
+                ProfileId : profileID,
+                EntityId : entityID,
+                RoleId : role.RoleId,
+                RoleName : role.RoleName
+            };
+            
+            responseList.push(newProfile);
+        });
+    });
+    
+    return {
+        Profiles : responseList
+    };
+}
+
+handlers.GetClanAppications = function (args, context) {
+    var clanID = args.ClanID;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var request = {
+        Group : clanEntity
+    };
+    
+    var result = entity.ListGroupApplications(request);
+    
+    var applications = result.Applications;
+    var enities = applications.map(a => a.Entity);
+    var profileIds = enities.map(a => a.Lineage.master_player_account.Id);
+    
+    var responseList = [];
+    
+    // get admin Id
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var adminID = "";
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    var members = membersResult.Members;
+    
+    members.forEach(function(role) {
+        if (role.RoleId == "admins")
+        {
+            adminID = role.Members[0].Lineage.master_player_account.Id;
+        }
+    });
+    
+    applications.forEach(function(apply) {
+        var expires = apply.Expires;
+        var entityID = apply.Entity.Key.Id;
+        var profileID = apply.Entity.Lineage.master_player_account.Id;
+        
+        var newProfile = {
+            ClanAdminID : adminID,
+            ClanIdToJoin : clanID, 
+            ProfileId : profileID,
+            EntityId : entityID,
+            Expires : expires
+        };
+        
+        responseList.push(newProfile);
+    });
+    
+    return {
+        Profiles : responseList
+    };
+}
+
+handlers.AcceptClanInvite = function (args, context) {
+    
+    var clanID = args.ClanID;
+    var entityID = args.EntityID;
+    
+    var maxMembers = GetInternalTitleData(MaxClanMembersKey);
+    maxMembers = maxMembers == "" ? DefaultClanMembers : maxMembers;
+    maxMembers = parseInt(maxMembers);
+    
+    var clanMembers = GetClanMemberCount(clanID);
+    
+    if (clanMembers >= maxMembers)
+    {
+        return MaxClanMembersError();
+    }
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var playerEntity = {
+        Id : entityID,
+        Type : "title_player_account"
+    };
+    
+    var request = {
+        Group : clanEntity,
+        Entity : playerEntity
+    };
+    
+    var result = entity.AcceptGroupInvitation(request);
+    
+    return result;
+}
+
+handlers.AcceptGroupApplication = function (args, context) {
+    
+    var clanID = args.ClanID;
+    var entityID = args.EntityID;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var maxMembers = GetInternalTitleData(MaxClanMembersKey);
+    maxMembers = maxMembers == "" ? DefaultClanMembers : maxMembers;
+    maxMembers = parseInt(maxMembers);
+    
+    var clanMembers = GetClanMemberCount(clanID);
+    
+    if (clanMembers >= maxMembers)
+    {
+        return MaxClanMembersError();
+    }
+
+    var playerEntity = {
+        Id : entityID,
+        Type : "title_player_account"
+    };
+    
+    var request = {
+        Group : clanEntity,
+        Entity : playerEntity
+    };
+    
+    var result = entity.AcceptGroupApplication(request);
+    
+    return result;
+}
+
+handlers.GetClanInfo = function (args, context) {
+    var clanID = args.ClanID;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var groupResult = entity.GetGroup(groupRequest);
+    
+    var objectRequest = {
+        Entity : clanEntity
+    };
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    
+    var members = membersResult.Members;
+    
+    var adminID = "";
+    var membersCount = 0;
+    
+    members.forEach(function(role) {
+        if (role.RoleId == "admins")
+        {
+            adminID = role.Members[0].Key.Id;
+        }
+        membersCount += role.Members.length;
+    });
+    
+    return {
+        GroupId : clanID,
+        GroupName : groupResult.GroupName,
+        AdminID : adminID,
+        MembersCount : membersCount,
+        MemberRoleId : groupResult.MemberRoleId,
+        AdminRoleId : groupResult.AdminRoleId,
+        Created : groupResult.Created,
+        ImageURL : objectsResult.Objects.ImageURL.DataObject,
+        Description : objectsResult.Objects.Description.DataObject
+    };
+}
+
+handlers.RemoveClan = function (args, context) {
+    var clanID = args.ClanID;
+    var clanName = args.ClanName;
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/${ClanTableID}(PartitionKey='', RowKey='${clanName}')/${secretKey}`;
+    //return url;
+    var method = "delete";
+    var contentBody = "";
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json",
+        "If-Match": "*"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var objectRequest = {
+        Entity : clanEntity
+    };
+    
+    var statisticProfile = "";
+    
+    var objectsResult = entity.GetObjects(objectRequest);
+    if (objectsResult.Objects.StatisticProfile != null)
+    {
+        statisticProfile = objectsResult.Objects.StatisticProfile.DataObject;
+    }
+    
+    if (statisticProfile != "")
+    {
+        var statisticRequest = {
+            PlayFabId: statisticProfile, 
+            Statistics:
+            [{
+                StatisticName: "CBSClanRating",
+                Value: 0
+            }]
+        };
+    
+        var playerStatResult = server.UpdatePlayerStatistics(statisticRequest);
+    }
+    
+    var removeResult = entity.DeleteGroup(groupRequest);
+    
+    var removeTagRequest = {
+        PlayFabId : currentPlayerId,
+        TagName : clanID
+    }
+    
+    server.RemovePlayerTag(removeTagRequest);
+    
+    removeTagRequest.TagName = clanName;
+    
+    server.RemovePlayerTag(removeTagRequest);
+    
+    return removeResult;
+}
+
+handlers.CreateClan = function (args, context) {
+    var name = args.Name;
+    var description = args.Description;
+    var imageURL = args.ImageURL;
+    var entityID = args.EntityID;
+    var entityType = args.EntityType;
+    
+    var entityKey = {
+        Id : entityID,
+        Type : entityType
+    };
+    
+    var createRequest = {
+        GroupName : name,
+        Entity : entityKey
+    };
+    
+    var createResult = entity.CreateGroup(createRequest);
+    
+    var groupName = createResult.GroupName;
+    var groupID = createResult.Group.Id;
+    
+    var registerCallback = RegisterClanInAzure(groupName, groupID);
+    
+    var clanEntity = {
+        Id : groupID,
+        Type : "group"
+    };
+    
+    var apirequest = {
+        Objects: [
+            {
+                ObjectName : "ImageURL",
+                DataObject : imageURL
+            },
+            {
+                ObjectName : "Description",
+                DataObject : description
+            },
+            {
+                ObjectName : "StatisticProfile",
+                DataObject : currentPlayerId
+            },
+            {
+                ObjectName : "Tag",
+                DataObject : ClanGroupTag
+            }
+        ],
+        Entity: clanEntity
+    }
+    
+    entity.SetObjects(apirequest);
+    
+    var addTagRequest = {
+        PlayFabId : currentPlayerId,
+        TagName : groupID
+    }
+    
+    server.AddPlayerTag(addTagRequest);
+    
+    addTagRequest.TagName = groupName;
+    
+    server.AddPlayerTag(addTagRequest);
+    
+    return groupID;
+}
+
+function RegisterClanInAzure(clanName, clanID)
+{
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+        
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    
+    var url = `https://${storageKey}.table.core.windows.net/${ClanTableID}(PartitionKey='', RowKey='${clanName}')/${secretKey}`;
+    var method = "put";
+    var contentBody = {
+        ClanID : `${clanID}`
+    };
+    contentBody = JSON.stringify(contentBody);
+    
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    
+    response = response == null || response == undefined || response == "" ? "{}" : response; 
+    var responseObject = JSON.parse(response);
+    
+    // check table to exist
+    if (responseObject.hasOwnProperty("odata.error"))
+    {
+        var errorBody = responseObject["odata.error"];
+        var errorCode = errorBody.code;
+        if (errorCode == "TableNotFound")
+        {
+            var createResult = CreateTable(ClanTableID);
+
+            if (createResult == "success")
+            {
+                response = http.request(url,method,contentBody,contentType,headers);
+            }
+            else
+            {
+                return DefaultError();
+            }
+        }
+        else
+        {
+            return DefaultError();
+        }
+    }
+    
+    return response;
+}
+
+function GetClanMemberCount(clanID)
+{
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    
+    var members = membersResult.Members;
+    
+    var membersCount = 0;
+    
+    members.forEach(function(role) {
+        membersCount += role.Members.length;
+    });
+    
+    return membersCount;
+}
+
+// currency
+handlers.AddVirtualCurrency = function (args, context) {
+    server.AddUserVirtualCurrency({ PlayFabId : currentPlayerId, 
+    VirtualCurrency: args.Currency, 
+    Amount: args.Amount });
+}
+
+handlers.DecreaseVirtualCurrency = function (args, context) {
+    server.SubtractUserVirtualCurrency({ PlayFabId : currentPlayerId, 
+    VirtualCurrency: args.Currency, 
+    Amount: args.Amount });
+}
+
+// items
+handlers.GrandItem = function (args, context) {
+    var itemIDs = args.items;
+    var catalogID = args.catalogID;
+    
+    var request = {
+        PlayFabId: currentPlayerId,
+        ItemIds: itemIDs,
+        CatalogVersion: catalogID
+    };
+    
+    var result = server.GrantItemsToUser(request);
+    var grandResult = result.ItemGrantResults;
+    grandResult.forEach(function(element){
+      if (element == null || element.Result == false)
+        return DefaultError();
+    });
+    
+    return result;
+}
+
+function InternalGrandItems (ItemIds, playerID)
+{
+    var request = {
+        PlayFabId: playerID,
+        ItemIds: ItemIds,
+        CatalogVersion: ItemDefaultCatalog
+    };
+    
+    var result = server.GrantItemsToUser(request);
+    var grandResult = result.ItemGrantResults;
+    grandResult.forEach(function(element){
+      if (element == null || element.Result == false)
+        return DefaultError();
+    });
+    
+    return result;
+}
+
+handlers.GrandBundle = function (args, context) {
+    var itemID = args.item;
+    var catalogID = args.catalogID;
+    
+    var request = {
+        PlayFabId: currentPlayerId,
+        ItemIds: [itemID],
+        CatalogVersion: catalogID
+    };
+    
+    var result = server.GrantItemsToUser(request);
+    var grandResult = result.ItemGrantResults[0];
+    var success = grandResult.Result;
+    var instanceID = grandResult.ItemInstanceId;
+    if (success == true)
+    {
+        var revokeRequest = {
+            ItemInstanceId: instanceID,
+            PlayFabId: currentPlayerId
+        };
+        server.RevokeInventoryItem(revokeRequest);
+    }
+    else
+    {
+        return DefaultError();
+    }
+    return result;
+}
+
+handlers.GrandRegistrationPrize = function (args, context) {
+    var playerID = args.playerID;
+    var levelGroupId = args.levelGroupId;
+    
+    var levelData = GetTitleData(levelGroupId);
+    if (levelData != "")
+    {
+        var levels = JSON.parse(levelData);
+
+        var prizeObject = levels.RegistrationPrize;
+        AddPrizes(prizeObject, playerID);
+    }
+}
+
+// invertory
+
+handlers.RemoveInvertoryItem = function (args, context) {
+    var itemID = args.item;
+    
+    var revokeRequest = {
+        ItemInstanceId: itemID,
+        PlayFabId: currentPlayerId
+    };
+    var result = server.RevokeInventoryItem(revokeRequest);
+    return result;
+}
+
+handlers.UpdateInvertoryItemData = function (args, context) {
+    var itemID = args.item;
+    var characterID = args.characterID;
+    var dataKey = args.dataKey;
+    var dataValue = args.dataValue;
+    
+    var updateRequest = {
+        ItemInstanceId: itemID,
+        PlayFabId: currentPlayerId,
+        CharacterId: characterID,
+        Data: dict = {
+          [dataKey]: dataValue
+        }
+    };
+    var result = server.UpdateUserInventoryItemCustomData(updateRequest);
+    return result;
+}
+
+// chat 
+
+handlers.ClearUnreadMessage = function (args, context)
+{
+    var profileID = args.ProfileID;
+    var userID = args.UserID;
+    
+    var tableID = ChatListTablePrefix + profileID;
+    
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+        
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}(PartitionKey='', RowKey='${userID}')/${secretKey}`;
+    var method = "patch";
+    var contentBody = {
+        UnreadCount : `0`
+    };
+    
+    contentBody = JSON.stringify(contentBody);
+    
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    
+    return response;
+}
+
+handlers.UpdateMessageList = function (args, context)
+{
+    senderID = currentPlayerId;
+    reciverID = args.reciverID;
+    rowKey = args.rowKey;
+    partitionKey = args.partitionKey;
+    lastMessage = args.lastMessage;
+    
+    var getProfileRequest = {
+        PlayFabId : senderID,
+        ProfileConstraints : {
+            ShowDisplayName : true
+        }
+    };
+    
+    var profileResult = server.GetPlayerProfile(getProfileRequest);
+    var senderName = profileResult.PlayerProfile.DisplayName;
+    
+    getProfileRequest.PlayFabId = reciverID;
+    profileResult = server.GetPlayerProfile(getProfileRequest);
+    var reciverName = profileResult.PlayerProfile.DisplayName;
+    
+    var updateResult = InsertOrUpdateMessageList(senderID, reciverID, reciverName, rowKey, lastMessage, false);
+    updateResult = InsertOrUpdateMessageList(reciverID, senderID, senderName, rowKey, lastMessage, true);
+    
+    return updateResult;
+}
+
+function InsertOrUpdateMessageList(userID, reciverID, userName, rowKey, lastMessage, inscreseCount)
+{
+    var tableID = ChatListTablePrefix + userID;
+    
+    var serverTime = new Date().getTime();
+    
+    // try to update exist data
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+        
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    
+    var unreadCount = 0;    
+    // check UnreadCount
+    if (inscreseCount == true)
+    {
+        var urlCount = `https://${storageKey}.table.core.windows.net/${tableID}(PartitionKey='', RowKey='${reciverID}')/${secretKey}`;
+        var method = "get";
+        var countResponse =  http.request(urlCount,method,JSON.stringify(""),contentType,headers);
+        countResponse = countResponse == null || countResponse == undefined || countResponse == "" ? "{}" : countResponse;
+        var responseObject = JSON.parse(countResponse);
+        if (responseObject.hasOwnProperty("odata.error") || !responseObject.hasOwnProperty("UnreadCount"))
+        {
+            unreadCount++;
+        }
+        else
+        {
+            var currentUnread = responseObject.UnreadCount;
+            unreadCount = parseInt(currentUnread) + 1;
+        }
+    }
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}(PartitionKey='', RowKey='${reciverID}')/${secretKey}`;
+    var method = "put";
+    var contentBody = {
+        UserName : `${userName}`,
+        UserID : `${reciverID}`,
+        LastMessage : `${lastMessage}`,
+        UpdateTime : `${serverTime}`,
+        UnreadCount : `${unreadCount}`
+    };
+    contentBody = JSON.stringify(contentBody);
+    
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    response = response == null || response == undefined || response == "" ? "{}" : response; 
+    var responseObject = JSON.parse(response);
+    // check table to exist
+    if (responseObject.hasOwnProperty("odata.error"))
+    {
+        var errorBody = responseObject["odata.error"];
+        var errorCode = errorBody.code;
+        if (errorCode == "TableNotFound")
+        {
+            var createResult = CreateTable(tableID);
+            if (createResult == "success")
+            {
+                response = http.request(url,method,contentBody,contentType,headers);
+            }
+            else
+            {
+                return DefaultError();
+            }
+        }
+        else
+        {
+            return DefaultError();
+        }
+    }
+    
+    return response;
+}
+
+// azure
+handlers.GetDataFromTable = function (args, context) {
+    var tableID = args.tableID;
+    var nTop = args.nTop;
+    var partitionKey = args.partitionKey;
+    var rowKey = args.rowKey;
+    
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    var nTopQuery = "";
+    var keyQuery = "";
+    
+    
+    
+    if ((rowKey != null && rowKey != "") || (partitionKey != null && partitionKey != ""))
+    {
+        rowKey = rowKey == null || rowKey == undefined ? "" : rowKey;
+        partitionKey = partitionKey == null || partitionKey == undefined ? "" : partitionKey;
+        keyQuery = `(PartitionKey='${partitionKey}', RowKey='${rowKey}')`;
+    }
+    else if (nTop != null && nTop != "")
+    {
+        nTopQuery = `$top=${nTop}&`;
+        secretKey = addStr(secretKey, 1, nTopQuery);
+    }
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}${keyQuery}/${secretKey}`;
+    
+    var method = "get";
+    var contentBody = "";
+    var contentType = "application/json;odata=nometadata";
+    var headers = {
+        Accept: "application/json;odata=nometadata"
+    };
+    
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    var responseObject = JSON.parse(response);
+    
+    if (responseObject.hasOwnProperty("odata.error"))
+    {
+        var errorBody = responseObject["odata.error"];
+        var errorCode = errorBody.code;
+        if (errorCode == "TableNotFound")
+        {
+            return {
+                value : []
+            }
+        }
+        else
+        {
+            return DefaultError();
+        }
+    }
+    
+    var responseObject = JSON.parse(response);
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return response;
+}
+
+handlers.InsertDataToTable = function (args, context) {
+    var tableID = args.tableID;
+    var rowKey = args.rowKey;
+    var partitionKey = args.partitionKey;
+    var rawData = args.rawData;
+    var createTable = args.createTable;
+
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (partitionKey == null || partitionKey == "")
+    {
+        var serverTime = new Date().getTime();
+        partitionKey = 10000000000000 - serverTime;
+    }
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}/${secretKey}`;
+    var method = "post";
+    var contentBody = {
+        RowKey : `${rowKey}`,
+        PartitionKey : `${partitionKey}`,
+        RawData : `${rawData}`
+    };
+    contentBody = JSON.stringify(contentBody);
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    var responseObject = JSON.parse(response);
+    // check table to exist
+    if (responseObject.hasOwnProperty("odata.error") && createTable)
+    {
+        var errorBody = responseObject["odata.error"];
+        var errorCode = errorBody.code;
+        if (errorCode == "TableNotFound")
+        {
+            var createResult = CreateTable(tableID);
+            if (createResult == "success")
+            {
+                var response2 =  http.request(url,method,contentBody,contentType,headers);
+                var responseObject2 = JSON.parse(response2);
+                if (responseObject2.hasOwnProperty("odata.error") || response2.includes("xml"))
+                {
+                    return DefaultError();
+                }
+                return response2;
+            }
+            else
+            {
+                return DefaultError();
+            }
+        }
+        else
+        {
+            return DefaultError();
+        }
+    }
+    
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return response;
+}
+
+handlers.UpdateTableData = function (args, context) {
+    var tableID = args.tableID;
+    var rowKey = args.rowKey;
+    var partitionKey = args.partitionKey;
+    var rawData = args.rawData;
+    
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}(PartitionKey='${partitionKey}', RowKey='${rowKey}')/${secretKey}`;
+    var method = "put";
+    var contentBody = {
+        RawData : `${rawData}`
+    };
+    contentBody = JSON.stringify(contentBody);
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    var responseObject = JSON.parse(response);
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return response;
+}
+
+handlers.DeleteTableData = function (args, context) {
+    var tableID = args.tableID;
+    var rowKey = args.rowKey;
+    var partitionKey = args.partitionKey
+    
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/${tableID}(PartitionKey='${partitionKey}', RowKey='${rowKey}')/${secretKey}`;
+    var method = "delete";
+    var contentBody = "";
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json",
+        "If-Match": "*"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+
+    var responseObject = JSON.parse(response);
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return response;
+}
+
+function CreateTable(tableID)
+{
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/Tables/${secretKey}`;
+    var method = "post";
+    var contentBody = {
+        TableName : `${tableID}`
+    };
+    contentBody = JSON.stringify(contentBody);
+    var contentType = "application/json";
+    var headers = {
+        Accept: "application/json"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    var responseObject = JSON.parse(response);
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return "success";
+}
+
+handlers.GetTables = function (args, context) {
+    var secretKey = GetInternalTitleData(AzureSecretDataKey);
+    var storageKey = GetInternalTitleData(AzureStorageDataKey);
+    
+    if (secretKey == "")
+        return DefaultError();
+    
+    var url = `https://${storageKey}.table.core.windows.net/Tables/${secretKey}`;
+    var method = "get";
+    var contentBody = "";
+    var contentType = "application/json;odata=nometadata";
+    var headers = {
+        Accept: "application/json;odata=nometadata"
+    };
+    var response =  http.request(url,method,contentBody,contentType,headers);
+    var responseObject = JSON.parse(response);
+    if (responseObject.hasOwnProperty("odata.error") || response.includes("xml"))
+    {
+        return DefaultError();
+    }
+    return response;
+}
+
+// local functions
+
+function DefaultError()
+{
+    throw new Error("The script called a PlayFab API, which returned an error. See the Error logs for details.");
+}
+
+function MaxClanMembersError()
+{
+    throw new Error("Failed. Clan reached max members count.");
+}
+
+function TournamentNotConfiguredError()
+{
+    throw new Error("Failed. Tournament Data not configured.");
+}
+
+function DailyBonusNotConfiguredError()
+{
+    throw new Error("Failed. Daily Bonus Data not configured.");
+}
+
+function DailyBonusCollectedError()
+{
+    throw new Error("Failed. You already collected daily bonus.");
+}
+
+function TournamentAllreadyExist()
+{
+    throw new Error("Failed. You are already exist in the tournament.");
+}
+
+function NoTournamentExist()
+{
+    throw new Error("Failed. You are not participating in any tournament.");
+}
+
+function NoActiveTournamentError()
+{
+    throw new Error("Failed. Tournament is no longer active.");
+}
+
+function NotFinishedTournamentError()
+{
+    throw new Error("Failed. Tournament is not over yet.");
+}
+
+function RoulettNotConfiguredError()
+{
+    throw new Error("Failed. Roulette Data not configured.");
+}
+
+function AchievementsNotConfiguredError()
+{
+    throw new Error("Failed. Achievements Data not configured.");
+}
+
+function DailyTasksNotConfiguredError()
+{
+    throw new Error("Failed. Daily Tasks Data not configured.");
+}
+
+function AchievementNotFoundError()
+{
+    throw new Error("Failed. Achievement with this id was not found.");
+}
+
+function AchievementAlreadyCompletedError()
+{
+    throw new Error("Failed. The achievement has already been completed");
+}
+
+function AchievementAlreadyRewardedError()
+{
+    throw new Error("Failed. AchievementAlreadyCompletedError");
+}
+
+function AchievementNotCompletedError()
+{
+    throw new Error("Failed. The achievement has been not completed");
+}
+
+function GetPlayerStatisticValue(playerID, statisticName) {
+    
+    let result = server.GetPlayerStatistics({ PlayFabId: playerID, StatisticNames: [ statisticName ] });
+
+    if (result.Statistics.length > 0)
+    {
+        var experienceStats = result.Statistics[0];
+    
+        var experienceValue = experienceStats.Value;
+        
+        if (experienceValue == null)
+        {
+            experienceValue = 0;
+        }
+        
+        return experienceValue;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+function GetTitleData(titleKey)
+{
+    var resultData = server.GetTitleData({ Keys: [titleKey] });
+    var data = resultData.Data
+    if (data.hasOwnProperty(titleKey))
+    {
+        return data[titleKey];
+    }
+    else
+    {
+        return "";
+    }
+}
+
+function GetInternalTitleData(titleKey)
+{
+    var resultData = server.GetTitleInternalData({ Keys: [titleKey] });
+    var data = resultData.Data
+    if (data.hasOwnProperty(titleKey))
+    {
+        return data[titleKey];
+    }
+    else
+    {
+        return "";
+    }
+}
+
+function GetPlayerTitleData(profileID, titleKey)
+{
+    var resultData = server.GetUserInternalData({ 
+        PlayFabId : profileID,
+        Keys: [titleKey] 
+    });
+    var data = resultData.Data
+    if (data.hasOwnProperty(titleKey))
+    {
+        return data[titleKey].Value;
+    }
+    else
+    {
+        return "";
+    }
+}
+
+
+function GetPlayerDailyBonusData(profileID)
+{
+    var dailyData = GetPlayerTitleData(profileID, PlayerDailyBonusDataKey);
+    var dailyIndex = GetPlayerTitleData(profileID, PlayerDailyBonusIndexKey);
+    
+    var day = dailyData == "" ? 0 : parseInt(dailyData);
+    var index = dailyIndex == "" ? 0 : parseInt(dailyIndex);
+    
+    var result = {
+        Day : day,
+        Index : index
+    };
+    return result;
+}
+
+function GetRouletteData()
+{
+    var rawData = GetTitleData(RouletteDataKey);
+    if (rawData == "")
+    {
+        return RoulettNotConfiguredError();
+    }
+    else
+    {
+        var data = JSON.parse(rawData);
+        if (data.Positions == null || data.Positions.length == 0)
+        {
+            return RoulettNotConfiguredError();
+        }
+        else
+        {
+            return data;
+        }
+    }
+}
+
+function GetAchievementsData()
+{
+    var rawData = GetTitleData(AchievementsDataKey);
+    if (rawData == "")
+    {
+        return AchievementsNotConfiguredError();
+    }
+    else
+    {
+        var data = JSON.parse(rawData);
+        if (data.Achievements == null || data.Achievements.length == 0)
+        {
+            return AchievementsNotConfiguredError();
+        }
+        else
+        {
+            return data;
+        }
+    }
+}
+
+function GetDailyTasksData()
+{
+    var rawData = GetTitleData(DailyTasksDataKey);
+    if (rawData == "")
+    {
+        return DailyTasksNotConfiguredError();
+    }
+    else
+    {
+        var data = JSON.parse(rawData);
+        if (data.DailyTasks == null || data.DailyTasks.length == 0)
+        {
+            return DailyTasksNotConfiguredError();
+        }
+        else
+        {
+            return data;
+        }
+    }
+}
+
+function GetDailyBonusData()
+{
+    var rawData = GetTitleData(DailyBonusDataKey);
+    if (rawData == "")
+    {
+        return DailyBonusNotConfiguredError();
+    }
+    else
+    {
+        var data = JSON.parse(rawData);
+        if (data.DaliyPrizes == null || data.DaliyPrizes.length == 0)
+        {
+            return DailyBonusNotConfiguredError();
+        }
+        else
+        {
+            return data;
+        }
+    }
+}
+
+function GetTournamentData()
+{
+    var rawData = GetInternalTitleData(TournamentDataKey);
+    if (rawData == "")
+    {
+        return TournamentNotConfiguredError();
+    }
+    else
+    {
+        var data = JSON.parse(rawData);
+        if (data.Tournaments == null || data.Tournaments.length == 0)
+        {
+            return TournamentNotConfiguredError();
+        }
+        else
+        {
+            return data;
+        }
+    }
+}
+
+function GetDefaultTournament(data)
+{
+    if (data == null || data.Tournaments == null || data.Tournaments.length == 0)
+    {
+        return TournamentNotConfiguredError();
+    }
+    else
+    {
+        var allTournament = data.Tournaments;
+        var defaultTournament = null;
+        Object.keys(allTournament).forEach(function(key) {
+            var tournament = allTournament[key];
+            if (tournament.IsDefault == true)
+            {
+                defaultTournament = tournament;
+            }
+        });
+        
+        if (defaultTournament == null)
+        {
+            return TournamentNotConfiguredError();
+        }
+        else
+        {
+            return defaultTournament;
+        }
+    }
+}
+
+function GetTournamentByID(tournamentID)
+{
+    var data = GetTournamentData();
+    
+    if (data == null || data.Tournaments == null || data.Tournaments.length == 0)
+    {
+        return TournamentNotConfiguredError();
+    }
+    else
+    {
+        var allTournament = data.Tournaments;
+        return allTournament[tournamentID];
+    }
+}
+
+function AsignNewLevelResult(result, levelData, newLevel, playerID)
+{
+    result.NewLevelReached = true;
+    if (levelData != "")
+    {
+        var levels = JSON.parse(levelData);
+        var levelTable = levels.Table;
+        if (levelTable != null)
+        {
+            var levelDetail = levelTable[newLevel - 1];
+            var prizeObject = levelDetail.Prizes;
+            
+            AddPrizes(prizeObject, playerID);
+            
+            result.NewLevelPrize = prizeObject;
+        }
+    }
+    return result;
+}
+
+function AddPrizes(prizeObject, playerID)
+{
+    if (prizeObject != null)
+    {
+        // grand items
+        var items = prizeObject.BundledItems;
+        if (items != null && items.length > 0)
+        {
+            var grandResult = InternalGrandItems(items, playerID);
+        }
+        // grand lutboxes
+        var lutboxes = prizeObject.LutBoxes;
+        if (lutboxes != null && lutboxes.length > 0)
+        {
+            var grandResult = InternalGrandItems(lutboxes, playerID);
+        }
+        // grand currenices
+        var currencies = prizeObject.BundledVirtualCurrencies;
+        if (currencies != null && Object.keys(currencies).length > 0)
+        {
+            Object.keys(currencies).forEach(function(key) {
+                var code = key;
+                var val = currencies[key];
+                server.AddUserVirtualCurrency({ PlayFabId : playerID, VirtualCurrency: code, Amount: val });
+            });
+        }
+        
+    }
+}
+
+function ParseLevelDetail(levelData, currentExp)
+{
+    var prevLevelExp = 0;
+    var nextLevelExp = 0;
+    var currentLevel = 0;
+
+    if (levelData != "")
+    {
+        var levels = JSON.parse(levelData);
+        if (!levels.hasOwnProperty("Table"))
+            return DefaultError();
+        var objectArray = levels.Table;
+        var experienceArray = objectArray.map(a => a.Expirience);
+        experienceArray = experienceArray.sort((a, b) => a - b);
+        var reverseArray = experienceArray.reverse();
+        prevLevelExp = reverseArray.find(a => a <= currentExp);
+        experienceArray.reverse();
+        
+        if (prevLevelExp != null)
+        {
+            
+            currentLevel = experienceArray.indexOf(prevLevelExp) + 1;
+        }
+        else
+        {
+            prevLevelExp = 0;
+        }
+        
+        var nextLevel = currentLevel + 1;
+        
+        if (nextLevel > experienceArray.length)
+        {
+            nextLevelExp = prevLevelExp;
+        }
+        else
+        {
+            nextLevelExp = experienceArray[nextLevel - 1];
+        }
+        
+        var resultObject = {
+            CurrentLevel : currentLevel,
+            PrevLevelExp : prevLevelExp,
+            NextLevelExp : nextLevelExp,
+            CurrentExp : currentExp
+        }
+    }
+    
+    return resultObject;
+}
+
+function GetClanAdmin(clanID)
+{
+    var clanEntity = {
+        Id : clanID,
+        Type : "group"
+    };
+    
+    var groupRequest = {
+        Group : clanEntity
+    };
+    
+    var adminID = "";
+    var membersResult = entity.ListGroupMembers(groupRequest);
+    var memberGroup = membersResult.Members;
+    
+    memberGroup.forEach(function(role) {
+        if (role.RoleId == "admins")
+        {
+            adminID = role.Members[0].Lineage.master_player_account.Id;
+        }
+    });
+    
+    return adminID;
+}
+
+function GetUserClanID(entityID)
+{
+    var viewerEntity = {
+        Id : entityID,
+        Type : "title_player_account"
+    }
+    
+    var memberRequest = {
+        Entity : viewerEntity
+    };
+    
+    var memberResult = entity.ListMembership(memberRequest);
+    
+    var memberGroups = memberResult.Groups;
+    if (memberGroups.length > 0)
+    {
+        var clanId = "";
+        for (var i in memberGroups) {
+            var group = memberGroups[i];
+            var currentGroupID = group.Group.Id;
+
+            var groupEntity = {
+                Id : currentGroupID,
+                Type : "group"
+            }
+            
+            var objectRequest = {
+                Entity : groupEntity
+            };
+            
+            var objectsResult = entity.GetObjects(objectRequest);
+            
+            var objects = objectsResult.Objects;
+            if (objects.hasOwnProperty("Tag"))
+            {
+                var tag = objects.Tag.DataObject;
+                if (tag == ClanGroupTag)
+                {
+                    clanId = currentGroupID;
+                    break;
+                }
+            }
+        }
+        return clanId;
+    }
+    else
+    {
+        return "";
+    }
+}
+
+function GetProfilesFromEntities(entities)
+{
+    const maxEntitiesInRequest = 25;
+    var count = entities.length;
+    
+    var request = {
+        Entities : entities
+    }
+    
+    var result = entity.GetProfiles(request);
+    return result;
+}
+
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+function addStr(str, index, stringToAdd){
+  return str.substring(0, index) + stringToAdd + str.substring(index, str.length);
+}
+
+function NewGuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+    });
+}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34cfc40b551f60c44a1174ac28461a9f, type: 3}
+  m_Name: CommonPrefabs
+  m_EditorClassIdentifier: 
+  Canvas: {fileID: 8249548941641570403, guid: 29536597ccb6815469b73e8513021aa4, type: 3}
+  BaseTab: {fileID: 1693408789063715109, guid: 0e9937d18280700409401fbda2b11d7a, type: 3}
+  IconsPanel: {fileID: 5777545226827199878, guid: 5c5c1b5a55b19494a86398dc8f033d57, type: 3}
+  PurchaseButton: {fileID: 719646004067759283, guid: a3475bf44e1b2484cbb97ff27cc27c32, type: 3}
+  SimpleIcon: {fileID: 7835600936393616388, guid: 6953330d27a5e6740945383abd7ef192, type: 3}
+  GameContext: {fileID: 6923662173215795631, guid: 9679d5c539cdbbb4a803f7bf98b60b8c, type: 3}

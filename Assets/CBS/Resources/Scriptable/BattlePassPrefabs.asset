@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e4e6fac7d4b9e2479a25b2bf7308b0b, type: 3}
+  m_Name: BattlePassPrefabs
+  m_EditorClassIdentifier: 
+  BattlePassFrame: {fileID: 2292084903669590649, guid: 3cb9763eef0d99946b853c4028c039d4, type: 3}
+  BattlePassWindow: {fileID: 3575257084497275188, guid: 3a017f2d9ef908441a84d6eb91ab5d27, type: 3}
+  RewardDrawer: {fileID: 8230557591189065704, guid: 2480b4c31ac4568419b8ad9acaebb40d, type: 3}
+  LevelDrawer: {fileID: 8471641214636954827, guid: 427827f330294114586b407c2715b4ed, type: 3}

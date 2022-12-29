@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a15740f98f9d2e645a865b3ccf0c5fdc, type: 3}
+  m_Name: FriendsPrefabs
+  m_EditorClassIdentifier: 
+  FriendsWindow: {fileID: 7960605154960018985, guid: 9a581c2835134404b8e716403f04fcfc, type: 3}
+  FriendUI: {fileID: 8377721428597199660, guid: 5f8f3f5207703b540b8ab3a1b793ad4b, type: 3}
+  RequestedFriendUI: {fileID: 8377721428597199660, guid: 279ee08ba1e0bb04a886864cc524d5dd, type: 3}
+  DialogUI: {fileID: 2725277903727776688, guid: b30c0d88de676314cb833c834cde8138, type: 3}

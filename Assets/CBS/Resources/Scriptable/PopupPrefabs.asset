@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e453f35df26ec54aa6e5e49e2709f69, type: 3}
+  m_Name: PopupPrefabs
+  m_EditorClassIdentifier: 
+  SimplePopup: {fileID: 881226619913067908, guid: b01d7a642581f9d49ae89e98970465ee, type: 3}
+  YesNoPopup: {fileID: 881226619913067908, guid: 50f75691583208c4da68c95e7bc4410b, type: 3}
+  UserInfoForm: {fileID: 6828474543047107555, guid: 5b7d9ae9d3c7af44c9fd6b8f8136d41e, type: 3}
+  ClanInfoForm: {fileID: 6828474543047107555, guid: 728fdfde5f7d31a41b9248c373a6a6e7, type: 3}
+  LoadingPopup: {fileID: 7911048344621456432, guid: 347fc8652471cc4419f58b9fd5517539, type: 3}
+  RewardPopup: {fileID: 3150811849864397341, guid: 38ccb42d735389c43a52e1a87b8f139a, type: 3}

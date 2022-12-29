@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4018a5396d827214fa6fac39e6b3033e, type: 3}
+  m_Name: ChatPrefabs
+  m_EditorClassIdentifier: 
+  ChatWindow: {fileID: 6735092698252120474, guid: 5e73587457822c64eb0172392322b3b7, type: 3}
+  SimpleChatMessage: {fileID: 7054510670631470291, guid: 8a91821afa6d2ab4ca24cda400d59b5b, type: 3}
+  BubbleChatMessage: {fileID: 7054510670631470291, guid: d56c58ca4470de84880ed922ecb3d63e, type: 3}
+  ClanChatMessage: {fileID: 5619548002921473735, guid: 6b1a2d5426a234947b8efc93a671ba7a, type: 3}
+  SimpleChatView: {fileID: 1397541855301821816, guid: 6b7e75163bd02c343a8594f7359bf191, type: 3}

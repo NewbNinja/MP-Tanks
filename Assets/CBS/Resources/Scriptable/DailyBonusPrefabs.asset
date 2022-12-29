@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6889c9cae69a274479b7ae9b94159287, type: 3}
+  m_Name: DailyBonusPrefabs
+  m_EditorClassIdentifier: 
+  DailyBonusWindow: {fileID: 8944097208501920069, guid: 3ac0d3ac86e1b9e4b9f93daaea62dd99, type: 3}
+  DailyBonusSlot: {fileID: 3698993693324597041, guid: a57f19a4143949b41b2b3b2700f859c1, type: 3}

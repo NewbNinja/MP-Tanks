@@ -1,0 +1,109 @@
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using PlayFab;
+using PlayFab.ServerModels;
+using PlayFab.Plugins.CloudScript;
+using PlayFab.Samples;
+
+namespace SIS
+{
+    public static class PlayFabFunctions
+    {
+        [FunctionName("addCurrency")]
+        public static async Task addCurrency([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            FunctionExecutionContext<Dictionary<string,int>> context = JsonConvert.DeserializeObject<FunctionExecutionContext<Dictionary<string,int>>>(await req.ReadAsStringAsync());
+            string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
+            var args = context.FunctionArgument;
+
+            PlayFabSettings.staticSettings.TitleId = context.TitleAuthenticationContext.Id;
+            PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable("PLAYFAB_DEV_SECRET_KEY", EnvironmentVariableTarget.Process);
+
+            var getUserInventory = PlayFabServerAPI.GetUserInventoryAsync(new GetUserInventoryRequest
+            {
+  		        PlayFabId = playerId
+          	});
+
+            var serverDict = getUserInventory.Result.Result.VirtualCurrency;
+
+            if(args != null && serverDict != null)
+            {
+                foreach(string clientKey in args.Keys)
+                {
+                    string cur = clientKey.Substring(0, 2).ToUpper();
+                    int diff = args[clientKey] - serverDict[cur];
+
+                    if(diff > 0)
+                    {
+                        await PlayFabServerAPI.AddUserVirtualCurrencyAsync(new AddUserVirtualCurrencyRequest
+                        {
+                            PlayFabId = playerId,
+                            VirtualCurrency = cur,
+                            Amount = diff
+                        });
+                    }
+                    else if(diff < 0)
+                    {
+                        diff = diff * (-1);
+                        await PlayFabServerAPI.SubtractUserVirtualCurrencyAsync(new SubtractUserVirtualCurrencyRequest
+                        {
+                            PlayFabId = playerId,
+                            VirtualCurrency = cur,
+                            Amount = diff
+                        });
+                    }
+                }	
+            }
+        }
+
+
+        [FunctionName("grantItems")]
+        public static async Task grantItems([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            FunctionExecutionContext<List<string>> context = JsonConvert.DeserializeObject<FunctionExecutionContext<List<string>>>(await req.ReadAsStringAsync());
+            string playerId = context.CallerEntityProfile.Lineage.MasterPlayerAccountId;
+            var args = context.FunctionArgument;
+
+            PlayFabSettings.staticSettings.TitleId = context.TitleAuthenticationContext.Id;
+            PlayFabSettings.staticSettings.DeveloperSecretKey = Environment.GetEnvironmentVariable("PLAYFAB_DEV_SECRET_KEY", EnvironmentVariableTarget.Process);
+
+            var getUserInventory = PlayFabServerAPI.GetUserInventoryAsync(new GetUserInventoryRequest
+            {
+  		        PlayFabId = playerId
+          	});
+
+            var serverArray = getUserInventory.Result.Result.Inventory;
+        
+            if(args != null && serverArray != null)
+            {
+                for (int i = 0; i < serverArray.Count; i++)
+                {
+                    for (int j = args.Count - 1; j >= 0; j--)
+                    {
+                        if(serverArray[i].ItemId == args[j])
+                        {
+                            args.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
+            }
+        
+            if(args.Count > 0)
+            {
+                await PlayFabServerAPI.GrantItemsToUserAsync(new GrantItemsToUserRequest
+                {
+                    PlayFabId = playerId,
+                    ItemIds = args
+                });
+            }
+        }
+    }
+}
