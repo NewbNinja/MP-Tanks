@@ -566,3 +566,4 @@ namespace FLOBUK.ReceiptValidator
         }
     }
 }
+

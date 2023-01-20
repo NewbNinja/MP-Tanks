@@ -65,7 +65,7 @@ namespace TanksMP
         //if this is the first time launching the game, set initial values
         void Start()
         {
-            //set initial values for all settings
+            // SET DEFAULTS - set initial values for all settings
             if (!PlayerPrefs.HasKey(PrefsKeys.playerName)) PlayerPrefs.SetString(PrefsKeys.playerName, "User" + System.String.Format("{0:0000}", Random.Range(1, 9999)));
             if (!PlayerPrefs.HasKey(PrefsKeys.networkMode)) PlayerPrefs.SetInt(PrefsKeys.networkMode, 0);
             if (!PlayerPrefs.HasKey(PrefsKeys.gameMode)) PlayerPrefs.SetInt(PrefsKeys.gameMode, 0);
@@ -76,7 +76,7 @@ namespace TanksMP
 
             PlayerPrefs.Save();
 
-            //read the selections and set them in the corresponding UI elements
+            // READ VALUE FROM MENU INPUTS - read the selections and set them in the corresponding UI elements
             nameField.text = PlayerPrefs.GetString(PrefsKeys.playerName);
             networkDrop.value = PlayerPrefs.GetInt(PrefsKeys.networkMode);
             gameModeDrop.value = PlayerPrefs.GetInt(PrefsKeys.gameMode);
@@ -91,6 +91,7 @@ namespace TanksMP
             //listen to network connection and IAP billing errors
             NetworkManagerCustom.connectionFailedEvent += OnConnectionError;
             UnityIAPManager.purchaseFailedEvent += OnBillingError;
+
         }
 
 

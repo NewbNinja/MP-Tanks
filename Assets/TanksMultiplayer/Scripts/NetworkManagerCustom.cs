@@ -245,6 +245,9 @@ namespace TanksMP
         {
             //when connecting to the master, try joining a room
             PhotonNetwork.JoinRandomRoom();
+
+            //Debug.Log(PhotonNetwork.IsConnected);
+            
         }
 
 

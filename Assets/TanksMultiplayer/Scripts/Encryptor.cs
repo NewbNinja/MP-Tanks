@@ -30,7 +30,7 @@ namespace TanksMP
         /// On Windows Phone this key must be exactly 16 characters (128 bit) long.
         /// SAVE THIS KEY SOMEWHERE ON YOUR END, SO IT DOES NOT GET LOST ON UPDATES.
         /// </summary>
-        public string secret = "abcd1234";
+        public string secret = "FiB0N4c1";
 
 
         //set reference
