@@ -84,6 +84,10 @@ namespace TanksMP
         //this means that we previously selected this product and reinitialize it as selected again
         void Start()
         {
+            string a = value.ToString();
+            Debug.Log($"{Time.time}: (IAPProduct : 87):  " + a);            // DELETE THIS LATER
+            Debug.Log($"{Time.time}: (IAPProduct : 88):  TEST");
+
             if (Encryptor.Decrypt(PlayerPrefs.GetString(PrefsKeys.activeTank)) == value.ToString())
                 IsSelected(true);
         }

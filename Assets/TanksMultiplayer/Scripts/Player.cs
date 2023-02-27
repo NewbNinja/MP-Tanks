@@ -39,6 +39,7 @@ namespace TanksMP
 
         /// <summary>
         /// Movement speed in all directions.
+        /// PUN sets move speed in the Prefab/Resources/ folder for each asset
         /// </summary>
         public float moveSpeed = 8f;
 
