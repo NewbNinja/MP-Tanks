@@ -3,6 +3,11 @@
  * 	You shall not license, sublicense, sell, resell, transfer, assign, distribute or
  * 	otherwise make available to any third party the Service or the Content. */
 
+// THIS IS JUST A BACK UP INCASE I BREAK SOMETHING
+// Gareth
+/*
+
+
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
@@ -42,19 +47,6 @@ namespace TanksMP
         /// PUN sets move speed in the Prefab/Resources/ folder for each asset
         /// </summary>
         public float moveSpeed = 8f;
-
-        /// <summary>
-        /// Player ship strafe speed, left and right of current position.
-        /// PUN sets strafe speed in the Prefab/Resources/ folder for each asset
-        /// on the Player.cs script -- change base value there if required
-        /// </summary>
-        public float strafeSpeed = 14f;
-
-        /// <summary>
-        /// Player rotation speed.
-        /// PUN sets rotation speed in the Prefab/Resources/ folder for each asset
-        /// </summary>
-        public float rotateSpeed = 30f;
 
         /// <summary>
         /// UI Slider visualizing health value.
@@ -164,7 +156,7 @@ namespace TanksMP
             GameManager.GetInstance().localPlayer = this;
 
 			//get components and set camera target
-            rb = GetComponent<Rigidbody>();        
+            rb = GetComponent<Rigidbody>();
             camFollow = Camera.main.GetComponent<FollowTarget>();
             camFollow.target = turret;
 
@@ -174,9 +166,9 @@ namespace TanksMP
             GameManager.GetInstance().ui.controls[0].onDrag += Move;
             GameManager.GetInstance().ui.controls[0].onDragEnd += MoveEnd;
 
-            //GameManager.GetInstance().ui.controls[1].onDragBegin += ShootBegin;
+            GameManager.GetInstance().ui.controls[1].onDragBegin += ShootBegin;
             GameManager.GetInstance().ui.controls[1].onDrag += RotateTurret;
-            //GameManager.GetInstance().ui.controls[1].onDrag += Shoot;
+            GameManager.GetInstance().ui.controls[1].onDrag += Shoot;
             #endif
         }
 
@@ -201,12 +193,12 @@ namespace TanksMP
         {        
             if (stream.IsWriting)
             {             
-                //here we send OUR turret rotation angle to other clients
+                //here we send the turret rotation angle to other clients
                 stream.SendNext(turretRotation);
             }
             else
             {   
-                //here we receive the turret rotation angle from other players and apply it
+                //here we receive the turret rotation angle from others and apply it
                 this.turretRotation = (short)stream.ReceiveNext();
                 OnTurretRotation();
             }
@@ -225,9 +217,6 @@ namespace TanksMP
                 return;
             }
 
-            // CODE BELOW EXECUTED ON LOCAL CLIENT ONLY
-            // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
             //movement variables
             Vector2 moveDir;
             Vector2 turnDir;
@@ -243,8 +232,7 @@ namespace TanksMP
                 //read out moving directions and calculate force
                 moveDir.x = Input.GetAxis("Horizontal");
                 moveDir.y = Input.GetAxis("Vertical");
-                //Move(moveDir);
-                HandleMovement(moveDir);
+                Move(moveDir);
             }
 
             //cast a ray on a plane at the mouse position for detecting where to shoot 
@@ -264,9 +252,6 @@ namespace TanksMP
             //rotate turret to look at the mouse direction
             RotateTurret(new Vector2(hitPos.x, hitPos.z));
 
-            //rotate the ship to look at the mouse / right stick position
-            //RotateShip(turnDir);      // -- NOT WORKING ... fix this.
-
             //shoot bullet on left mouse click
             if (Input.GetButton("Fire1"))
                 Shoot();
@@ -278,32 +263,8 @@ namespace TanksMP
 			#endif
         }
         #endif
-
-        //rotates the player ship to face right stick / mouse pointer position
-        void RotateShip(Vector2 direction = default(Vector2))
-        {
-            //don't rotate without values
-            if (direction == Vector2.zero)
-                return;
-
-            float rotate = Input.GetAxis("RightStickHorizontal") * (rotateSpeed*100) * Time.deltaTime;
-
-            //get rotation value as angle out of the direction we received
-            turretRotation = (short)Quaternion.LookRotation(new Vector3(rotate, 0, 0)).eulerAngles.y;
-            OnTurretRotation();
-
-
-            //Vector3 mousePos = Input.mousePosition;
-            //mousePos.z = 10; // distance from the camera
-            //Vector3 objectPos = Camera.main.WorldToScreenPoint(transform.position);
-            //mousePos.x -= objectPos.x;
-            //mousePos.y -= objectPos.y;
-            //float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg;
-
-            //Quaternion desiredRotation = Quaternion.Euler(new Vector3(0, angle - 90, 0));
-            //turret.transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotateSpeed);
-        }
-
+            
+      
         /// <summary>
         /// Helper method for getting the current object owner.
         /// </summary>
@@ -327,27 +288,6 @@ namespace TanksMP
             rb.MovePosition(rb.position + movementDir);
         }
 
-        // SG Spaceship Movement
-        private void HandleMovement(Vector2 direction = default(Vector2))
-        {
-            //if (direction != Vector2.zero)
-            //    transform.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.y));
-
-
-            // === THIS WORKED ===
-            //Vector3 strafe = new Vector3(direction.x, 0, 0);
-            float strafe = direction.x * strafeSpeed * Time.deltaTime;
-            float accel = direction.y * moveSpeed * Time.deltaTime;
-
-            transform.Translate(strafe, 0, accel);
-            Debug.Log($"Translate value: {strafe}  After:  {strafe * strafeSpeed * Time.deltaTime}");
-            //=====================
-
-            //Vector3 move = transform.right * direction.x + transform.forward * direction.y;     // Move
-            //rb.velocity = move * (moveSpeed*100) * Time.deltaTime;
-
-        }
-
 
         //on movement drag ended
         void MoveEnd()
@@ -368,12 +308,7 @@ namespace TanksMP
             //get rotation value as angle out of the direction we received
             turretRotation = (short)Quaternion.LookRotation(new Vector3(direction.x, 0, direction.y)).eulerAngles.y;
             OnTurretRotation();
-
-            // SG - Rotate ship using the current turret rotation (change turret method name later to something more suitable)
-            //OnShipRotation(direction);
         }
-
- 
 
 
         //on shot drag start set small delay for first shot
@@ -448,17 +383,6 @@ namespace TanksMP
             //we don't need to check for local ownership when setting the turretRotation,
             //because OnPhotonSerializeView PhotonStream.isWriting == true only applies to the owner
             turret.rotation = Quaternion.Euler(0, turretRotation, 0);
-            
-        }
-
-        //hook for updating player ship rotation locally
-        void ShipRotate(Vector2 direction = default(Vector2))
-        {
-            //we don't need to check for local ownership when setting the shipRotation,
-            //because OnPhotonSerializeView PhotonStream.isWriting == true only applies to the owner
-            //turret.rotation = Quaternion.Euler(0, turretRotation, 0);
-    
-
         }
 
 
@@ -656,3 +580,5 @@ namespace TanksMP
         }
     }
 }
+
+*/
