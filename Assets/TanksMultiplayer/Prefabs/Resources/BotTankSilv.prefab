@@ -1454,7 +1454,10 @@ MonoBehaviour:
   fireRate: 0.75
   moveSpeed: 8
   strafeSpeed: 14
-  rotateSpeed: 30
+  rotationSpeed: 30
+  rotationAccelRate: 0.5
+  rotationMagnitude: 0
+  rotationDecay: 0.5
   healthSlider: {fileID: 114000010781945690}
   shieldSlider: {fileID: 114000013554628402}
   shotClip: {fileID: 8300000, guid: 9d685be7bcccd974bb6312c9965ff4e5, type: 3}
@@ -1462,6 +1465,8 @@ MonoBehaviour:
   shotFX: {fileID: 1000011513120438, guid: f70d27f5cf28c8941bbfd6febd74797f, type: 3}
   explosionFX: {fileID: 1000010321467122, guid: 0e7cc58b84350174d86594375300513b,
     type: 3}
+  playerDirectionIndicator: {fileID: 0}
+  playerShipPrefab: {fileID: 0}
   turret: {fileID: 4000010800536194}
   shotPos: {fileID: 4000011296908770}
   bullets:

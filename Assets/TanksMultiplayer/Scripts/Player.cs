@@ -16,11 +16,15 @@ namespace TanksMP
     /// </summary> 
     public class Player : MonoBehaviourPunCallbacks, IPunObservable
     {
+        [Header("Player Info")]
+        [SerializeField]
         /// <summary>
         /// UI Text displaying the player name.
         /// </summary>    
         public Text label;
 
+        [SerializeField]
+        [Range(10, 1000)]
         /// <summary>
         /// Maximum health value at game start.
         /// </summary>
@@ -32,29 +36,64 @@ namespace TanksMP
         [HideInInspector]
         public short turretRotation;
 
+        [SerializeField]
+        [Range(0.01f, 3f)]
         /// <summary>
         /// Delay between shots.
         /// </summary>
         public float fireRate = 0.75f;
 
+
+        [Header("Player Movement")]
+        [SerializeField]
+        [Range(5f,50f)]
         /// <summary>
         /// Movement speed in all directions.
         /// PUN sets move speed in the Prefab/Resources/ folder for each asset
         /// </summary>
-        public float moveSpeed = 8f;
+        public float moveSpeed = 20f;
 
+        [SerializeField]
+        [Range(5f, 50f)]
         /// <summary>
         /// Player ship strafe speed, left and right of current position.
         /// PUN sets strafe speed in the Prefab/Resources/ folder for each asset
         /// on the Player.cs script -- change base value there if required
         /// </summary>
-        public float strafeSpeed = 14f;
+        public float strafeSpeed = 10f;
 
+        [SerializeField]
+        [Range(5f, 100f)]
         /// <summary>
         /// Player rotation speed.
         /// PUN sets rotation speed in the Prefab/Resources/ folder for each asset
         /// </summary>
-        public float rotateSpeed = 30f;
+        public float rotationSpeed = 30f;
+
+        [SerializeField]
+        [Range(0.01f, 2f)]
+        /// <summary>
+        /// Rotation acceleration rate.   
+        /// How fast the mouse / right stick will build rotationMagnitude which governs current rotation velocity
+        /// </summary>
+        float rotationAccelRate = 0.5f;
+
+        [SerializeField]
+        [Range(-150f, 150f)]
+        /// <summary>
+        /// Player rotation magnitude handles how much rotation should be applied to player on next update
+        /// which is determined by the horizontal force received from the mouse over several FixedUpdates
+        /// 
+        /// Example:   rotationSpeed * rotationMagnitude * Time.deltaTime;
+        /// </summary>
+        public float rotationMagnitude = 0f;
+
+        [SerializeField]
+        [Range(0.1f, 25f)]
+        /// <summary>
+        /// Gradually slows down the rotation of the player ship if no rotation input is received in future updates
+        /// </summary>
+        public float rotationDecay = 0.5f;
 
         /// <summary>
         /// UI Slider visualizing health value.
@@ -85,6 +124,16 @@ namespace TanksMP
         /// Object to spawn on player death.
         /// </summary>
         public GameObject explosionFX;
+
+        /// <summary>
+        /// Reference to the Player Position Indicator (shows below the player ship)
+        /// </summary>
+        public Transform playerDirectionIndicator;
+
+        /// <summary>
+        /// Reference to the player ship prefab.
+        /// </summary>
+        public Transform playerShipPrefab;
 
         /// <summary>
         /// Turret to rotate with look direction.
@@ -231,6 +280,7 @@ namespace TanksMP
             //movement variables
             Vector2 moveDir;
             Vector2 turnDir;
+            Vector3 shipTurnDir;
 
             //reset moving input when no arrow keys are pressed down
             if (Input.GetAxisRaw("Horizontal") == 0 && Input.GetAxisRaw("Vertical") == 0)
@@ -258,14 +308,51 @@ namespace TanksMP
                 hitPos = ray.GetPoint(distance) - transform.position;
             }
 
+            // DEBUGGING
+            float rightStickHorizontal = Input.GetAxis("Right Stick Horizontal");
+
+
             //we've converted the mouse position to a direction
             turnDir = new Vector2(hitPos.x, hitPos.z);
+            shipTurnDir = new Vector3(hitPos.x, 0, 0);
 
             //rotate turret to look at the mouse direction
-            RotateTurret(new Vector2(hitPos.x, hitPos.z));
+            //RotateTurret(new Vector2(hitPos.x, hitPos.z));
 
             //rotate the ship to look at the mouse / right stick position
-            //RotateShip(turnDir);      // -- NOT WORKING ... fix this.
+            //RotateShip(shipTurnDir);
+            //RotateShip2(hitPos.x);
+
+
+            //-------------------------
+            //  HANDLE PLAYER ROTATION
+            /// If we're still rotating, slow us down gradually, then apply any new rotation input
+            //-------------------------
+            if (rotationMagnitude != 0)
+            {
+                if (rotationMagnitude > rotationDecay)
+                    rotationMagnitude -= rotationDecay;
+                else if (rotationMagnitude < (rotationDecay * -1))  // Get the negative value of the rotation decay
+                    rotationMagnitude += rotationDecay;
+                else
+                    rotationMagnitude = 0;
+            }
+
+            // apply any new rotation input
+            rotationMagnitude += (rightStickHorizontal * rotationAccelRate);
+            
+            // Limit to max of +-50 rotation magnitude to prevent player rotating constantly
+            if (rotationMagnitude > 50f) { rotationMagnitude = 50f; }
+            else if (rotationMagnitude < -50f) { rotationMagnitude = -50f; }
+
+            RotateShip2(rotationMagnitude);                                                 
+
+
+
+            //Debug.Log($"{Time.time} - RSH Input | Magnitude:  {rightStickHorizontal} | {rotationMagnitude}");
+            //-------------------------
+
+
 
             //shoot bullet on left mouse click
             if (Input.GetButton("Fire1"))
@@ -280,28 +367,57 @@ namespace TanksMP
         #endif
 
         //rotates the player ship to face right stick / mouse pointer position
-        void RotateShip(Vector2 direction = default(Vector2))
+        void RotateShip(Vector3 targetDirection = default(Vector3))
         {
             //don't rotate without values
-            if (direction == Vector2.zero)
+            if (targetDirection == Vector3.zero)
                 return;
 
-            float rotate = Input.GetAxis("RightStickHorizontal") * (rotateSpeed*100) * Time.deltaTime;
+            //==============================================================================================================
+            // THIS ROTATION IS WORKING - BUT 360 DEGREES, TRYING TO CLAMP IT TO HORIZONTAL ROTATION ADDITION, NOT LOOK AT
+            //==============================================================================================================
 
-            //get rotation value as angle out of the direction we received
-            turretRotation = (short)Quaternion.LookRotation(new Vector3(rotate, 0, 0)).eulerAngles.y;
-            OnTurretRotation();
+            // ROTATION INDICATOR:  Set the direction indicator to face the direction we're turning the ship towards
+            short requiredRotation = (short)Quaternion.LookRotation(targetDirection, Vector3.up).eulerAngles.y;
+            playerDirectionIndicator.rotation = Quaternion.Euler(90, requiredRotation - 90, 0);
+
+            // ROTATE TOWARDS LOOK ROTATION:  Get targetRotation and RotateTowards it
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(playerShipPrefab.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+            //==============================================================================================================
+        }
+
+        // Trying to fix the rotateship method
+        void RotateShip2(float magnitude)
+        {
+            // Rotate ship - clamp at 10f instead of 1f to help with sensitivity
+            float magX = Mathf.Clamp(magnitude, -10f, 10f);
+            float currentRotationSpeed = (rotationSpeed * magX) * 0.1f;
+
+            transform.Rotate(new Vector3(0f, currentRotationSpeed, 0f) * Time.deltaTime);
+
+            Debug.Log($"Rotation Magnitude | Speed:  {magX} | {currentRotationSpeed}");
 
 
-            //Vector3 mousePos = Input.mousePosition;
-            //mousePos.z = 10; // distance from the camera
-            //Vector3 objectPos = Camera.main.WorldToScreenPoint(transform.position);
-            //mousePos.x -= objectPos.x;
-            //mousePos.y -= objectPos.y;
-            //float angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg;
 
-            //Quaternion desiredRotation = Quaternion.Euler(new Vector3(0, angle - 90, 0));
-            //turret.transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotateSpeed);
+
+
+
+            //transform.Rotate(rotationSpeed * Time.deltaTime);
+
+            //transform.Rotate(rotation * rotationMagnitudeX * Time.unscaledDeltaTime);           // Rotate
+            //playerShip.transform.localRotation = Quaternion.Euler(0, 0, rollInput);             // Roll
+            //Vector3 move = transform.right * direction.x + transform.forward * direction.z;     // Move
+            //controller.Move(move * currentSpeed * Time.unscaledDeltaTime);
+
+            //// Calculate the rotation
+            //rotation = new Vector3(0f, dir.x, 0f).normalized;
+            //currentRotateSpeed = rotateSpeed * magnitude;
+
+            //// Calculate the roll amount - invert the number so the ship pitches the correct way
+            //RS_rollInput = maxRoll * dir.x * -1f;
+
         }
 
         /// <summary>
@@ -328,24 +444,14 @@ namespace TanksMP
         }
 
         // SG Spaceship Movement
-        private void HandleMovement(Vector2 direction = default(Vector2))
+        private void HandleMovement(Vector2 LS_direction = default(Vector2))
         {
-            //if (direction != Vector2.zero)
-            //    transform.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.y));
-
-
             // === THIS WORKED ===
             //Vector3 strafe = new Vector3(direction.x, 0, 0);
-            float strafe = direction.x * strafeSpeed * Time.deltaTime;
-            float accel = direction.y * moveSpeed * Time.deltaTime;
+            float strafe = LS_direction.x *strafeSpeed * Time.deltaTime;
+            float accel = LS_direction.y * moveSpeed * Time.deltaTime;
 
             transform.Translate(strafe, 0, accel);
-            Debug.Log($"Translate value: {strafe}  After:  {strafe * strafeSpeed * Time.deltaTime}");
-            //=====================
-
-            //Vector3 move = transform.right * direction.x + transform.forward * direction.y;     // Move
-            //rb.velocity = move * (moveSpeed*100) * Time.deltaTime;
-
         }
 
 
@@ -367,10 +473,8 @@ namespace TanksMP
 
             //get rotation value as angle out of the direction we received
             turretRotation = (short)Quaternion.LookRotation(new Vector3(direction.x, 0, direction.y)).eulerAngles.y;
+            //Debug.Log($"RotateTurret():  turretRotationAngle = {turretRotation}");
             OnTurretRotation();
-
-            // SG - Rotate ship using the current turret rotation (change turret method name later to something more suitable)
-            //OnShipRotation(direction);
         }
 
  
@@ -450,17 +554,6 @@ namespace TanksMP
             turret.rotation = Quaternion.Euler(0, turretRotation, 0);
             
         }
-
-        //hook for updating player ship rotation locally
-        void ShipRotate(Vector2 direction = default(Vector2))
-        {
-            //we don't need to check for local ownership when setting the shipRotation,
-            //because OnPhotonSerializeView PhotonStream.isWriting == true only applies to the owner
-            //turret.rotation = Quaternion.Euler(0, turretRotation, 0);
-    
-
-        }
-
 
         //hook for updating health locally
         //(the actual value updates via player properties)

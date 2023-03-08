@@ -37,7 +37,16 @@ namespace TanksMP
         //initialize variables
         void Awake()
         {
-            camTrans = Camera.main.transform;
+            //GameObject _parentObj = GetComponentInParent<GameObject>();
+            GameObject _playerCam = GameObject.FindGameObjectWithTag("PlayerCamera");
+
+            // Look for Camera attached to the player, if none, use default main camera
+            if (_playerCam != null)
+                camTrans = _playerCam.transform;
+            else
+                camTrans = Camera.main.transform;
+
+            //cache reference to this transform
             trans = transform;
         }
 

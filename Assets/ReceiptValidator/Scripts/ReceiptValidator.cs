@@ -84,7 +84,8 @@ namespace FLOBUK.ReceiptValidator
             if (IsLocalValidationSupported())
             {
                 #if !UNITY_EDITOR
-                    localValidator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
+                    //  NOTE:   I DISABLED THIS AS BUILDING WITHOUT google / apple ACCOUNTS CAUSES NULL EXCEPTION AND WONT BUILD
+                    //localValidator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
                 #endif
             }
         }

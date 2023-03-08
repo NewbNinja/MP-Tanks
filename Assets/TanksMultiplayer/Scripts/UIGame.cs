@@ -72,12 +72,12 @@ namespace TanksMP
             
             //on mobile devices enable additional aiming indicator
             #if !UNITY_EDITOR && !UNITY_STANDALONE && !UNITY_WEBGL
-            if (aimIndicator != null)
-            {
-                Transform indicator = Instantiate(aimIndicator).transform;
-                indicator.SetParent(GameManager.GetInstance().localPlayer.shotPos);
-                indicator.localPosition = new Vector3(0f, 0f, 3f);
-            }
+            //if (aimIndicator != null)
+            //{
+            //    Transform indicator = Instantiate(aimIndicator).transform;
+            //    indicator.SetParent(GameManager.GetInstance().localPlayer.shotPos);
+            //    indicator.localPosition = new Vector3(0f, 0f, 3f);
+            //}
             #endif
 
             //play background music
@@ -171,7 +171,7 @@ namespace TanksMP
         {
             //show joystick controls after disabling death text
             #if UNITY_EDITOR || (!UNITY_STANDALONE && !UNITY_WEBGL)
-                ToggleControls(true);
+                 ToggleControls(true);
             #endif
             
             //clear text component values
@@ -208,8 +208,8 @@ namespace TanksMP
             //check whether an ad was shown during the game
             //if no ad was shown during the whole round, we request one here
             #if UNITY_ADS
-            if(!UnityAdsManager.didShowAd())
-                UnityAdsManager.ShowAd(true);
+                if(!UnityAdsManager.didShowAd())
+                    UnityAdsManager.ShowAd(true);
             #endif
         }
 
