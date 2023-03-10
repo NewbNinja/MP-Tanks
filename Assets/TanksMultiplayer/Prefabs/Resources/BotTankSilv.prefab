@@ -1454,9 +1454,9 @@ MonoBehaviour:
   fireRate: 0.75
   moveSpeed: 8
   strafeSpeed: 14
-  rotationSpeed: 30
+  maxRotationSpeed: 30
   rotationAccelRate: 0.5
-  rotationMagnitude: 0
+  currentRotationSpeed: 0
   rotationDecay: 0.5
   healthSlider: {fileID: 114000010781945690}
   shieldSlider: {fileID: 114000013554628402}
