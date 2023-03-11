@@ -99,6 +99,12 @@ namespace TanksMP
         public float rotationDecay = 2f;
 
         /// <summary>
+        /// Handles the roll / tilt on the player ship
+        /// </summary>
+        [SerializeField] 
+        private float rollSpeed = 90f, rollAcceleration = 3.5f, maxRoll = 20f, maxStrafeRoll = 10f, rollInput, RS_rollInput, LS_rollInput;
+
+        /// <summary>
         /// UI Slider visualizing health value.
         /// </summary>
         public Slider healthSlider;
@@ -391,7 +397,7 @@ namespace TanksMP
             //Vector3 rotation = new Vector3(0f, dir.x, 0f).normalized;
             //float currentRotateSpeed = maxRotationSpeed * currentRotationSpeed;
             transform.Rotate(new Vector3(0f, currentRotationSpeed, 0f) * Time.deltaTime);
-            Debug.Log($"CRS:  {currentRotationSpeed}");
+            //Debug.Log($"CRS:  {currentRotationSpeed}");
 
             // Calculate the roll amount - invert the number so the ship pitches the correct way
             //RS_rollInput = maxRoll * dir.x * -1f;
