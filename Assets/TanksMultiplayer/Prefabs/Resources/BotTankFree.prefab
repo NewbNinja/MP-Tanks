@@ -860,10 +860,17 @@ MonoBehaviour:
   fireRate: 0.75
   moveSpeed: 8
   strafeSpeed: 14
-  rotationSpeed: 30
+  maxRotationSpeed: 100
   rotationAccelRate: 0.5
-  rotationMagnitude: 0
+  currentRotationSpeed: 0
   rotationDecay: 0.5
+  rollSpeed: 90
+  rollAcceleration: 3.5
+  maxRoll: 20
+  maxStrafeRoll: 10
+  rollInput: 0
+  RS_rollInput: 0
+  LS_rollInput: 0
   healthSlider: {fileID: 114000010174628874}
   shieldSlider: {fileID: 114000010779118672}
   shotClip: {fileID: 8300000, guid: 9d685be7bcccd974bb6312c9965ff4e5, type: 3}

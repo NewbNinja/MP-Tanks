@@ -521,7 +521,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_gold
   value: 2
-  type: 1
   buyButton: {fileID: 559377158}
   sold: {fileID: 695435762}
   selectButton: {fileID: 924933709}
@@ -2405,7 +2404,6 @@ MonoBehaviour:
   buyable: 0
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 2015123137}
   sold: {fileID: 1460730733}
   selectButton: {fileID: 1348790595}
@@ -4099,7 +4097,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 1766114979}
   sold: {fileID: 1343010928}
   selectButton: {fileID: 1187029697}
@@ -5053,7 +5050,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_silv
   value: 1
-  type: 1
   buyButton: {fileID: 2057172010}
   sold: {fileID: 797420570}
   selectButton: {fileID: 1150113224}
@@ -6168,7 +6164,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 744653973}
   m_Direction: 2
   m_Value: 1.0000001
-  m_Size: 0.35851225
+  m_Size: 0.33178523
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7988,7 +7984,7 @@ RectTransform:
   m_Father: {fileID: 1781450497}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.6414877}
+  m_AnchorMin: {x: 0, y: 0.6682148}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -9779,7 +9775,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 673851571}
   sold: {fileID: 1219170697}
   selectButton: {fileID: 422186265}
@@ -9934,7 +9929,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_silv
   value: 1
-  type: 1
   buyButton: {fileID: 1188229573}
   sold: {fileID: 589654579}
   selectButton: {fileID: 1763074852}
@@ -10204,10 +10198,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cd5ef32e73ceec4d8cd66c5e022d918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buyable: 1
+  buyable: 0
   id: ship_vulcan
   value: 4
-  type: 1
   buyButton: {fileID: 1189504874}
   sold: {fileID: 336746270}
   selectButton: {fileID: 1564816733}
@@ -10763,7 +10756,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 1499679349}
   sold: {fileID: 474259431}
   selectButton: {fileID: 381203789}
@@ -10898,7 +10890,6 @@ MonoBehaviour:
   buyable: 0
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 1775433098}
   sold: {fileID: 442389688}
   selectButton: {fileID: 1328810587}
@@ -11303,7 +11294,6 @@ MonoBehaviour:
   buyable: 0
   id: tank_free
   value: 0
-  type: 1
   buyButton: {fileID: 39279209}
   sold: {fileID: 0}
   selectButton: {fileID: 1870982997}
@@ -16149,7 +16139,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_gold
   value: 2
-  type: 1
   buyButton: {fileID: 1805896300}
   sold: {fileID: 216810740}
   selectButton: {fileID: 754373823}
@@ -16537,7 +16526,6 @@ MonoBehaviour:
   buyable: 1
   id: tank_simple
   value: 3
-  type: 1
   buyButton: {fileID: 288620863}
   sold: {fileID: 2125286926}
   selectButton: {fileID: 1646579263}
@@ -17124,7 +17112,6 @@ MonoBehaviour:
   buyable: 0
   id: tank_free
   value: 0
-  type: 1
   buyButton: {fileID: 1523301347}
   sold: {fileID: 0}
   selectButton: {fileID: 769104380}

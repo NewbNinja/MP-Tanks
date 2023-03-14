@@ -532,7 +532,8 @@ namespace TanksMP
         //shoots a bullet in the direction passed in
         //we do not rely on the current turret rotation here, because we send the direction
         //along with the shot request to the server to absolutely ensure a synced shot position
-        protected void Shoot(Vector2 direction = default(Vector2))
+        protected void Shoot
+            (Vector2 direction = default(Vector2))
         {
             //if shot delay is over  
             if (Time.time > nextFire)

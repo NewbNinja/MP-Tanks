@@ -1025,6 +1025,13 @@ MonoBehaviour:
   rotationAccelRate: 0.5
   currentRotationSpeed: 0
   rotationDecay: 0.5
+  rollSpeed: 90
+  rollAcceleration: 3.5
+  maxRoll: 20
+  maxStrafeRoll: 10
+  rollInput: 0
+  RS_rollInput: 0
+  LS_rollInput: 0
   healthSlider: {fileID: 114000014083876352}
   shieldSlider: {fileID: 114000010269705198}
   shotClip: {fileID: 8300000, guid: 9d685be7bcccd974bb6312c9965ff4e5, type: 3}

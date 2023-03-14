@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24eb85e7578dc8643937b2bd4acf370a, type: 3}
+  m_Name: 103001_Laser_DEW-2
+  m_EditorClassIdentifier: 
+  _weaponUID: 103001
+  WeaponName: DEW-2
+  Description: A double laser turret that fires red beams of awesomeness.   Shield
+    destroying, newb wrecking zippity-zappity goodness!
+  buttonImage: {fileID: 0}
+  shootSound: {fileID: 0}
+  projectileID: 0
+  color: {r: 1, g: 0.0603773, b: 0.0603773, a: 0}
+  WeaponTypeField: 2
+  AmmotypeField: 1
+  DamageTypeField: 0
+  minDamage: 257
+  maxDamage: 4359
+  damageModifier: 1
+  critChance: 18.1
+  critModifier: 1.5
+  bulletVelocity: 20
+  projectileRange: 20
+  projectileTimeToLive: 1.5
+  FiringPatternField: 2
+  numberOfCannons: 2
+  fireRate: 1.1
+  reloadTime: 0.5
+  chargeTime: 0
+  roundsPerBurst: 10
+  numberOfShotsLeftToFire: 0
+  burstFirstRound: 1
+  destroyProjectileOnImpact: 1
+  level: 0
+  experience: 0
+  isTradeable: 0
+  isCrafted: 0
+  isNFT: 0
