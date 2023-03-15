@@ -6,7 +6,7 @@ using Sirenix.OdinInspector;
 using System;
 
 [CreateAssetMenu(fileName = "New Weapon", menuName = "SpaceGuardians Weapon")]
-public class Weapon : ScriptableObject
+public class SG_Weapon : ScriptableObject
 {
     private float damage;
     private bool isCrit;
